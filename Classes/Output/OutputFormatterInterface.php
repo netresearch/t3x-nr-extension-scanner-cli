@@ -3,20 +3,17 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
+ * This file is part of the "nr_extension_scanner_cli" Extension for TYPO3 CMS.
  *
  * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
+ * LICENSE file that was distributed with this source code.
  *
- * The TYPO3 project - inspiring people to share!
+ * (c) Netresearch DTT GmbH <info@netresearch.de>
  */
 
 namespace Netresearch\ExtensionScannerCli\Output;
 
+use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -29,10 +26,10 @@ interface OutputFormatterInterface
     /**
      * Format and output scan results.
      *
-     * @param OutputInterface $output The console output to write to
-     * @param array<string, array<int, array<string, mixed>>> $allMatches Matches grouped by extension key
-     * @param int $totalStrong Total number of strong (definite) matches
-     * @param int $totalWeak Total number of weak (potential) matches
+     * @param OutputInterface                      $output      The console output to write to
+     * @param array<string, array<int, ScanMatch>> $allMatches  Matches grouped by extension key
+     * @param int                                  $totalStrong Total number of strong (definite) matches
+     * @param int                                  $totalWeak   Total number of weak (potential) matches
      */
     public function format(
         OutputInterface $output,

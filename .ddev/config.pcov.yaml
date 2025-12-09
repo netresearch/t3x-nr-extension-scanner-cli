@@ -1,0 +1,9 @@
+# PCOV configuration for code coverage
+# See https://ddev.readthedocs.io/en/latest/users/extend/customizing-images/
+
+webimage_extra_packages:
+  - php8.2-pcov
+
+hooks:
+  post-start:
+    - exec: phpenmod pcov

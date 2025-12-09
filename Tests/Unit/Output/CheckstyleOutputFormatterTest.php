@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Netresearch\ExtensionScannerCli\Tests\Unit\Output;
 
+use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
 use Netresearch\ExtensionScannerCli\Output\CheckstyleOutputFormatter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -27,14 +28,14 @@ final class CheckstyleOutputFormatterTest extends TestCase
         $output = new BufferedOutput();
         $matches = [
             'test_extension' => [
-                [
-                    'file' => 'Classes/Test.php',
-                    'absolutePath' => '/path/to/Classes/Test.php',
-                    'line' => 10,
-                    'indicator' => 'strong',
-                    'message' => 'Test message',
-                    'matcherClass' => 'TestMatcher',
-                ],
+                new ScanMatch(
+                    'Classes/Test.php',
+                    '/path/to/Classes/Test.php',
+                    10,
+                    'strong',
+                    'Test message',
+                    'TestMatcher',
+                ),
             ],
         ];
 
@@ -52,20 +53,24 @@ final class CheckstyleOutputFormatterTest extends TestCase
         $output = new BufferedOutput();
         $matches = [
             'ext1' => [
-                [
-                    'absolutePath' => '/path/to/File1.php',
-                    'line' => 10,
-                    'indicator' => 'strong',
-                    'message' => 'Message 1',
-                ],
+                new ScanMatch(
+                    'File1.php',
+                    '/path/to/File1.php',
+                    10,
+                    'strong',
+                    'Message 1',
+                    'TestMatcher',
+                ),
             ],
             'ext2' => [
-                [
-                    'absolutePath' => '/path/to/File2.php',
-                    'line' => 20,
-                    'indicator' => 'weak',
-                    'message' => 'Message 2',
-                ],
+                new ScanMatch(
+                    'File2.php',
+                    '/path/to/File2.php',
+                    20,
+                    'weak',
+                    'Message 2',
+                    'TestMatcher',
+                ),
             ],
         ];
 
@@ -82,12 +87,14 @@ final class CheckstyleOutputFormatterTest extends TestCase
         $output = new BufferedOutput();
         $matches = [
             'ext' => [
-                [
-                    'absolutePath' => '/path/to/File.php',
-                    'line' => 10,
-                    'indicator' => 'strong',
-                    'message' => 'Strong match',
-                ],
+                new ScanMatch(
+                    'File.php',
+                    '/path/to/File.php',
+                    10,
+                    'strong',
+                    'Strong match',
+                    'TestMatcher',
+                ),
             ],
         ];
 
@@ -102,12 +109,14 @@ final class CheckstyleOutputFormatterTest extends TestCase
         $output = new BufferedOutput();
         $matches = [
             'ext' => [
-                [
-                    'absolutePath' => '/path/to/File.php',
-                    'line' => 10,
-                    'indicator' => 'weak',
-                    'message' => 'Weak match',
-                ],
+                new ScanMatch(
+                    'File.php',
+                    '/path/to/File.php',
+                    10,
+                    'weak',
+                    'Weak match',
+                    'TestMatcher',
+                ),
             ],
         ];
 
@@ -122,12 +131,14 @@ final class CheckstyleOutputFormatterTest extends TestCase
         $output = new BufferedOutput();
         $matches = [
             'ext' => [
-                [
-                    'absolutePath' => '/path/to/File.php',
-                    'line' => 10,
-                    'indicator' => 'strong',
-                    'message' => 'Message with <special> & "characters"',
-                ],
+                new ScanMatch(
+                    'File.php',
+                    '/path/to/File.php',
+                    10,
+                    'strong',
+                    'Message with <special> & "characters"',
+                    'TestMatcher',
+                ),
             ],
         ];
 

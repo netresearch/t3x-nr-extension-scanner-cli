@@ -2,10 +2,21 @@ includes:
     - %currentWorkingDirectory%/.Build/vendor/phpstan/phpstan/conf/bleedingEdge.neon
 
 parameters:
-    level: 8
+    level: 10
     paths:
         - %currentWorkingDirectory%/Classes
     excludePaths:
         - %currentWorkingDirectory%/.Build/*
     treatPhpDocTypesAsCertain: false
     reportUnmatchedIgnoredErrors: true
+    # We deliberately use @internal TYPO3 Extension Scanner classes
+    # This is documented in the code and acceptable for a dev tool
+    ignoreErrors:
+        - '#Call to method .* of internal class TYPO3\\CMS\\Install\\ExtensionScanner#'
+        - '#Instantiation of internal class TYPO3\\CMS\\Install\\ExtensionScanner#'
+        - '#PHPDoc tag @var references internal class TYPO3\\CMS\\Install\\ExtensionScanner#'
+        - '#Return type .* has typehint with internal class TYPO3\\CMS\\Install\\ExtensionScanner#'
+        - '#Property .* references internal class TYPO3\\CMS\\Install\\ExtensionScanner#'
+        - '#Parameter .* has typehint with internal class TYPO3\\CMS\\Install\\ExtensionScanner#'
+        - '#Access to constant on internal class TYPO3\\CMS\\Install\\ExtensionScanner#'
+        - '#Call to internal method TYPO3\\CMS\\Core\\Package\\PackageInterface::getValueFromComposerManifest#'

@@ -3,20 +3,17 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
+ * This file is part of the "nr_extension_scanner_cli" Extension for TYPO3 CMS.
  *
  * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
+ * LICENSE file that was distributed with this source code.
  *
- * The TYPO3 project - inspiring people to share!
+ * (c) Netresearch DTT GmbH <info@netresearch.de>
  */
 
 namespace Netresearch\ExtensionScannerCli\Output;
 
+use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
 use Symfony\Component\Console\Output\OutputInterface;
 use XMLWriter;
 
@@ -45,10 +42,11 @@ class CheckstyleOutputFormatter implements OutputFormatterInterface
         $xml->writeAttribute('version', '4.3');
 
         // Group all matches by absolute file path for checkstyle format
+        /** @var array<string, list<ScanMatch>> $matchesByFile */
         $matchesByFile = [];
-        foreach ($allMatches as $extensionKey => $matches) {
+        foreach ($allMatches as $matches) {
             foreach ($matches as $match) {
-                $absolutePath = $match['absolutePath'] ?? $match['file'] ?? 'unknown';
+                $absolutePath = $match->absolutePath;
                 if (!isset($matchesByFile[$absolutePath])) {
                     $matchesByFile[$absolutePath] = [];
                 }
@@ -62,14 +60,11 @@ class CheckstyleOutputFormatter implements OutputFormatterInterface
 
             foreach ($matches as $match) {
                 $xml->startElement('error');
-                $xml->writeAttribute('line', (string)($match['line'] ?? 0));
+                $xml->writeAttribute('line', (string) $match->line);
                 $xml->writeAttribute('column', '0');
-                $xml->writeAttribute(
-                    'severity',
-                    ($match['indicator'] ?? 'strong') === 'strong' ? 'error' : 'warning',
-                );
-                $xml->writeAttribute('message', $match['message'] ?? 'Unknown issue');
-                $xml->writeAttribute('source', $this->formatSource($match['matcherClass'] ?? ''));
+                $xml->writeAttribute('severity', $match->isStrong() ? 'error' : 'warning');
+                $xml->writeAttribute('message', $match->message);
+                $xml->writeAttribute('source', 'TYPO3.ExtensionScanner.' . $match->getMatchType());
                 $xml->endElement(); // error
             }
 
@@ -80,15 +75,5 @@ class CheckstyleOutputFormatter implements OutputFormatterInterface
         $xml->endDocument();
 
         $output->write($xml->outputMemory());
-    }
-
-    /**
-     * Format the source identifier from the matcher class.
-     */
-    private function formatSource(string $matcherClass): string
-    {
-        $parts = explode('\\', $matcherClass);
-        $className = end($parts) ?: 'Unknown';
-        return 'TYPO3.ExtensionScanner.' . str_replace('Matcher', '', $className);
     }
 }

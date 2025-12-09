@@ -3,20 +3,17 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
+ * This file is part of the "nr_extension_scanner_cli" Extension for TYPO3 CMS.
  *
  * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
+ * LICENSE file that was distributed with this source code.
  *
- * The TYPO3 project - inspiring people to share!
+ * (c) Netresearch DTT GmbH <info@netresearch.de>
  */
 
 namespace Netresearch\ExtensionScannerCli\Service;
 
+use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser;
@@ -99,10 +96,11 @@ class ExtensionScannerService
     /**
      * Scan a directory path for deprecated API usage.
      *
-     * @param string $path Directory path to scan
-     * @param callable|null $progressCallback Optional callback for progress updates: fn(int $current, int $total)
+     * @param string        $path               Directory path to scan
+     * @param callable|null $progressCallback   Optional callback for progress updates: fn(int $current, int $total)
      * @param callable|null $parseErrorCallback Optional callback for parse errors: fn(string $file, string $error)
-     * @return array<int, array<string, mixed>> Array of matches
+     *
+     * @return list<ScanMatch> Array of scan matches
      */
     public function scanPath(
         string $path,
@@ -120,7 +118,7 @@ class ExtensionScannerService
             ->notPath('.Build');
 
         $files = iterator_to_array($finder);
-        $fileCount = count($files);
+        $fileCount = \count($files);
 
         if ($fileCount === 0) {
             return $matches;
@@ -135,7 +133,7 @@ class ExtensionScannerService
             $fileMatches = $this->scanFile($file, $parser, $matcherConfigurations, $parseErrorCallback);
             $matches = array_merge($matches, $fileMatches);
 
-            $processedFiles++;
+            ++$processedFiles;
             if ($progressCallback !== null) {
                 $progressCallback($processedFiles, $fileCount);
             }
@@ -147,11 +145,12 @@ class ExtensionScannerService
     /**
      * Scan a single PHP file.
      *
-     * @param SplFileInfo $file The file to scan
-     * @param Parser|null $parser Optional parser instance (for performance when scanning multiple files)
+     * @param SplFileInfo                                                         $file                  The file to scan
+     * @param Parser|null                                                         $parser                Optional parser instance (for performance when scanning multiple files)
      * @param array<class-string<AbstractCoreMatcher>, array<string, mixed>>|null $matcherConfigurations Optional matcher configs
-     * @param callable|null $parseErrorCallback Optional callback for parse errors
-     * @return array<int, array<string, mixed>>
+     * @param callable|null                                                       $parseErrorCallback    Optional callback for parse errors
+     *
+     * @return list<ScanMatch>
      */
     public function scanFile(
         SplFileInfo $file,
@@ -171,6 +170,7 @@ class ExtensionScannerService
             if ($parseErrorCallback !== null) {
                 $parseErrorCallback($file->getRelativePathname(), $e->getMessage());
             }
+
             return $matches;
         }
 
@@ -205,13 +205,19 @@ class ExtensionScannerService
 
         $matcherTraverser->traverse($statements);
 
-        // Collect matches from all matchers
+        // Collect matches from all matchers and convert to DTOs
+        $relativeFile = $file->getRelativePathname();
+        $absolutePath = $file->getRealPath() ?: $relativeFile;
+
         foreach ($matchers as $matcherClass => $matcher) {
-            foreach ($matcher->getMatches() as $match) {
-                $match['file'] = $file->getRelativePathname();
-                $match['absolutePath'] = $file->getRealPath();
-                $match['matcherClass'] = $matcherClass;
-                $matches[] = $match;
+            /** @var array<string, mixed> $rawMatch */
+            foreach ($matcher->getMatches() as $rawMatch) {
+                $matches[] = ScanMatch::fromMatcherOutput(
+                    $rawMatch,
+                    $relativeFile,
+                    $absolutePath,
+                    $matcherClass,
+                );
             }
         }
 
@@ -221,7 +227,8 @@ class ExtensionScannerService
     /**
      * Calculate match statistics from results.
      *
-     * @param array<int, array<string, mixed>> $matches
+     * @param list<ScanMatch> $matches
+     *
      * @return array{total: int, strong: int, weak: int}
      */
     public function calculateStatistics(array $matches): array
@@ -230,10 +237,10 @@ class ExtensionScannerService
         $weak = 0;
 
         foreach ($matches as $match) {
-            if (($match['indicator'] ?? 'strong') === 'strong') {
-                $strong++;
+            if ($match->isStrong()) {
+                ++$strong;
             } else {
-                $weak++;
+                ++$weak;
             }
         }
 
@@ -273,12 +280,16 @@ class ExtensionScannerService
         foreach (self::MATCHER_CONFIGURATIONS as $matcherClass => $configFile) {
             $configPath = $basePath . $configFile;
             if (file_exists($configPath)) {
-                $configurations[$matcherClass] = require $configPath;
+                /** @var array<string, mixed> $config */
+                $config = require $configPath;
+                $configurations[$matcherClass] = $config;
             }
         }
 
+        /* @var array<class-string<AbstractCoreMatcher>, array<string, mixed>> $configurations */
         $this->matcherConfigurations = $configurations;
-        return $configurations;
+
+        return $this->matcherConfigurations;
     }
 
     /**
@@ -289,6 +300,7 @@ class ExtensionScannerService
         if ($this->parser === null) {
             $this->parser = (new ParserFactory())->createForNewestSupportedVersion();
         }
+
         return $this->parser;
     }
 }

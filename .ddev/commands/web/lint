@@ -1,0 +1,14 @@
+#!/bin/bash
+
+## Description: Check and fix code style with PHP-CS-Fixer
+## Usage: lint [options]
+## Example: "ddev lint" or "ddev lint --fix"
+## Flags: [{"Name":"fix","Shorthand":"f","Type":"bool","Usage":"Fix code style issues automatically"}]
+
+if [ "$DDEV_FLAGS_FIX" = "true" ]; then
+    echo "Fixing code style..."
+    .Build/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php
+else
+    echo "Checking code style..."
+    .Build/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff
+fi

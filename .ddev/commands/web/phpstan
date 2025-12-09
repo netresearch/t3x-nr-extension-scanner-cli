@@ -1,0 +1,8 @@
+#!/bin/bash
+
+## Description: Run PHPStan static analysis
+## Usage: phpstan
+## Example: "ddev phpstan"
+
+echo "Running PHPStan analysis (level 10)..."
+.Build/bin/phpstan analyse -c Build/phpstan/phpstan.neon

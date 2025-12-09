@@ -1,0 +1,14 @@
+#!/bin/bash
+
+## Description: Run PHPUnit tests
+## Usage: test [options]
+## Example: "ddev test" or "ddev test --coverage"
+## Flags: [{"Name":"coverage","Shorthand":"c","Type":"bool","Usage":"Generate code coverage report"}]
+
+if [ "$DDEV_FLAGS_COVERAGE" = "true" ]; then
+    echo "Running tests with coverage..."
+    .Build/bin/phpunit -c phpunit.xml --coverage-text --coverage-html .Build/logs/html-coverage
+else
+    echo "Running tests..."
+    .Build/bin/phpunit -c phpunit.xml
+fi

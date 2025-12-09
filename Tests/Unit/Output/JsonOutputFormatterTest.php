@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Netresearch\ExtensionScannerCli\Tests\Unit\Output;
 
+use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
 use Netresearch\ExtensionScannerCli\Output\JsonOutputFormatter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -27,12 +28,14 @@ final class JsonOutputFormatterTest extends TestCase
         $output = new BufferedOutput();
         $matches = [
             'test_extension' => [
-                [
-                    'file' => 'Classes/Test.php',
-                    'line' => 10,
-                    'indicator' => 'strong',
-                    'message' => 'Test message',
-                ],
+                new ScanMatch(
+                    'Classes/Test.php',
+                    '/path/to/Classes/Test.php',
+                    10,
+                    'strong',
+                    'Test message',
+                    'TestMatcher',
+                ),
             ],
         ];
 
@@ -67,5 +70,36 @@ final class JsonOutputFormatterTest extends TestCase
         $result = json_decode($output->fetch(), true);
         self::assertArrayHasKey('timestamp', $result['summary']);
         self::assertNotEmpty($result['summary']['timestamp']);
+    }
+
+    #[Test]
+    public function formatIncludesMatchDetails(): void
+    {
+        $output = new BufferedOutput();
+        $matches = [
+            'my_extension' => [
+                new ScanMatch(
+                    'Classes/Service.php',
+                    '/var/www/ext/Classes/Service.php',
+                    42,
+                    'strong',
+                    'Deprecated API usage',
+                    'TYPO3\\CMS\\Install\\ExtensionScanner\\Php\\Matcher\\MethodCallMatcher',
+                    ['Deprecation-12345.rst'],
+                ),
+            ],
+        ];
+
+        $this->subject->format($output, $matches, 1, 0);
+
+        $result = json_decode($output->fetch(), true);
+        $extensionMatches = $result['extensions'][0]['matches'][0];
+
+        self::assertSame('Classes/Service.php', $extensionMatches['file']);
+        self::assertSame(42, $extensionMatches['line']);
+        self::assertSame('strong', $extensionMatches['indicator']);
+        self::assertSame('Deprecated API usage', $extensionMatches['message']);
+        self::assertSame('MethodCallMatcher', $extensionMatches['matcherClass']);
+        self::assertContains('Deprecation-12345.rst', $extensionMatches['restFiles']);
     }
 }

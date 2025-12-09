@@ -3,20 +3,17 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
+ * This file is part of the "nr_extension_scanner_cli" Extension for TYPO3 CMS.
  *
  * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
+ * LICENSE file that was distributed with this source code.
  *
- * The TYPO3 project - inspiring people to share!
+ * (c) Netresearch DTT GmbH <info@netresearch.de>
  */
 
 namespace Netresearch\ExtensionScannerCli\Command;
 
+use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
 use Netresearch\ExtensionScannerCli\Output\CheckstyleOutputFormatter;
 use Netresearch\ExtensionScannerCli\Output\JsonOutputFormatter;
 use Netresearch\ExtensionScannerCli\Output\OutputFormatterInterface;
@@ -124,18 +121,27 @@ class ExtensionScannerCommand extends Command
         // Ensure full TYPO3 is bootstrapped for package manager access
         Bootstrap::initializeBackendAuthentication();
 
-        $extensions = (array)$input->getArgument('extensions');
+        /** @var array<string> $extensions */
+        $extensions = (array) $input->getArgument('extensions');
+        /** @var string|null $customPath */
         $customPath = $input->getOption('path');
-        $scanAll = $input->getOption('all');
-        $format = $input->getOption('format');
-        $noProgress = $input->getOption('no-progress');
-        $failOnWeak = $input->getOption('fail-on-weak');
-        $includeSystem = $input->getOption('include-system');
-        $verboseParseErrors = $input->getOption('verbose-parse-errors');
+        /** @var bool $scanAll */
+        $scanAll = (bool) $input->getOption('all');
+        $formatOption = $input->getOption('format');
+        $format = \is_string($formatOption) ? $formatOption : 'table';
+        /** @var bool $noProgress */
+        $noProgress = (bool) $input->getOption('no-progress');
+        /** @var bool $failOnWeak */
+        $failOnWeak = (bool) $input->getOption('fail-on-weak');
+        /** @var bool $includeSystem */
+        $includeSystem = (bool) $input->getOption('include-system');
+        /** @var bool $verboseParseErrors */
+        $verboseParseErrors = (bool) $input->getOption('verbose-parse-errors');
 
         // Validate format option
-        if (!in_array($format, self::SUPPORTED_FORMATS, true)) {
-            $io->error(sprintf('Invalid format "%s". Use: table, json, or checkstyle', $format));
+        if (!\in_array($format, self::SUPPORTED_FORMATS, true)) {
+            $io->error(\sprintf('Invalid format "%s". Use: table, json, or checkstyle', $format));
+
             return Command::FAILURE;
         }
 
@@ -154,6 +160,7 @@ class ExtensionScannerCommand extends Command
 
         if (empty($pathsToScan)) {
             $io->warning('No extensions found to scan');
+
             return Command::SUCCESS;
         }
 
@@ -164,7 +171,7 @@ class ExtensionScannerCommand extends Command
 
         foreach ($pathsToScan as $extensionKey => $path) {
             if (!$noProgress && $format === 'table') {
-                $io->section(sprintf('Scanning: %s', $extensionKey));
+                $io->section(\sprintf('Scanning: %s', $extensionKey));
             }
 
             $extensionMatches = $this->scanExtensionPath(
@@ -200,6 +207,7 @@ class ExtensionScannerCommand extends Command
      * Resolve which paths to scan based on input options.
      *
      * @param array<string> $extensions
+     *
      * @return array<string, string>|null Paths indexed by extension key, or null on error
      */
     private function resolvePathsToScan(
@@ -213,7 +221,8 @@ class ExtensionScannerCommand extends Command
 
         if ($customPath !== null) {
             if (!is_dir($customPath)) {
-                $io->error(sprintf('Path does not exist: %s', $customPath));
+                $io->error(\sprintf('Path does not exist: %s', $customPath));
+
                 return null;
             }
             $pathsToScan['custom'] = rtrim($customPath, '/');
@@ -228,7 +237,8 @@ class ExtensionScannerCommand extends Command
         } elseif (!empty($extensions)) {
             foreach ($extensions as $extensionKey) {
                 if (!$this->packageManager->isPackageActive($extensionKey)) {
-                    $io->error(sprintf('Extension not found or not active: %s', $extensionKey));
+                    $io->error(\sprintf('Extension not found or not active: %s', $extensionKey));
+
                     return null;
                 }
                 $package = $this->packageManager->getPackage($extensionKey);
@@ -236,6 +246,7 @@ class ExtensionScannerCommand extends Command
             }
         } else {
             $io->error('Please provide extension key(s), --path, or --all option');
+
             return null;
         }
 
@@ -245,7 +256,7 @@ class ExtensionScannerCommand extends Command
     /**
      * Scan a single extension path.
      *
-     * @return array<int, array<string, mixed>>
+     * @return list<ScanMatch>
      */
     private function scanExtensionPath(
         string $path,
@@ -257,14 +268,14 @@ class ExtensionScannerCommand extends Command
         $progressCallback = null;
         if (!$noProgress && $format === 'table') {
             $progressCallback = static function (int $current, int $total) use ($io): void {
-                $io->write(sprintf("\rProcessed %d/%d files", $current, $total));
+                $io->write(\sprintf("\rProcessed %d/%d files", $current, $total));
             };
         }
 
         $parseErrorCallback = null;
         if ($verboseParseErrors) {
             $parseErrorCallback = static function (string $file, string $error) use ($io): void {
-                $io->warning(sprintf('Parse error in %s: %s', $file, $error));
+                $io->warning(\sprintf('Parse error in %s: %s', $file, $error));
             };
         }
 
