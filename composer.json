@@ -25,7 +25,7 @@
         "source": "https://github.com/netresearch/t3x-nr-extension-scanner-cli"
     },
     "require": {
-        "php": "^8.2 || ^8.5",
+        "php": "^8.2",
         "typo3/cms-core": "^12.4 || ^13.4",
         "typo3/cms-install": "^12.4 || ^13.4"
     },
