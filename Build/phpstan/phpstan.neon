@@ -8,7 +8,7 @@ parameters:
     excludePaths:
         - %currentWorkingDirectory%/.Build/*
     treatPhpDocTypesAsCertain: false
-    reportUnmatchedIgnoredErrors: true
+    reportUnmatchedIgnoredErrors: false
     # We deliberately use @internal TYPO3 Extension Scanner classes
     # This is documented in the code and acceptable for a dev tool
     ignoreErrors:
