@@ -31,7 +31,7 @@ class JsonOutputFormatter implements OutputFormatterInterface
         OutputInterface $output,
         array $allMatches,
         int $totalStrong,
-        int $totalWeak
+        int $totalWeak,
     ): void {
         $result = [
             'summary' => [
@@ -75,7 +75,8 @@ class JsonOutputFormatter implements OutputFormatterInterface
             $result['extensions'][] = $extensionResult;
         }
 
-        $output->writeln(json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        $json = json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        $output->writeln($json);
     }
 
     /**

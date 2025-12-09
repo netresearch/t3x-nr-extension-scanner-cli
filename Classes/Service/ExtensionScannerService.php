@@ -21,7 +21,6 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser;
 use PhpParser\ParserFactory;
-use PhpParser\PhpVersion;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -108,7 +107,7 @@ class ExtensionScannerService
     public function scanPath(
         string $path,
         ?callable $progressCallback = null,
-        ?callable $parseErrorCallback = null
+        ?callable $parseErrorCallback = null,
     ): array {
         $matches = [];
 
@@ -158,7 +157,7 @@ class ExtensionScannerService
         SplFileInfo $file,
         ?Parser $parser = null,
         ?array $matcherConfigurations = null,
-        ?callable $parseErrorCallback = null
+        ?callable $parseErrorCallback = null,
     ): array {
         $matches = [];
         $parser = $parser ?? $this->getParser();
@@ -268,7 +267,7 @@ class ExtensionScannerService
 
         $configurations = [];
         $basePath = GeneralUtility::getFileAbsFileName(
-            'EXT:install/Configuration/ExtensionScanner/Php/'
+            'EXT:install/Configuration/ExtensionScanner/Php/',
         );
 
         foreach (self::MATCHER_CONFIGURATIONS as $matcherClass => $configFile) {
@@ -288,7 +287,7 @@ class ExtensionScannerService
     private function getParser(): Parser
     {
         if ($this->parser === null) {
-            $this->parser = (new ParserFactory())->createForVersion(PhpVersion::fromComponents(8, 2));
+            $this->parser = (new ParserFactory())->createForNewestSupportedVersion();
         }
         return $this->parser;
     }

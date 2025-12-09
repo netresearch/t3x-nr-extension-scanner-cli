@@ -18,6 +18,7 @@ declare(strict_types=1);
 namespace Netresearch\ExtensionScannerCli\Output;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use XMLWriter;
 
 /**
  * Checkstyle XML output formatter for CI/CD integration.
@@ -32,9 +33,9 @@ class CheckstyleOutputFormatter implements OutputFormatterInterface
         OutputInterface $output,
         array $allMatches,
         int $totalStrong,
-        int $totalWeak
+        int $totalWeak,
     ): void {
-        $xml = new \XMLWriter();
+        $xml = new XMLWriter();
         $xml->openMemory();
         $xml->setIndent(true);
         $xml->setIndentString('  ');
@@ -65,9 +66,9 @@ class CheckstyleOutputFormatter implements OutputFormatterInterface
                 $xml->writeAttribute('column', '0');
                 $xml->writeAttribute(
                     'severity',
-                    ($match['indicator'] ?? 'strong') === 'strong' ? 'error' : 'warning'
+                    ($match['indicator'] ?? 'strong') === 'strong' ? 'error' : 'warning',
                 );
-                $xml->writeAttribute('message', $this->escapeXmlAttribute($match['message'] ?? 'Unknown issue'));
+                $xml->writeAttribute('message', $match['message'] ?? 'Unknown issue');
                 $xml->writeAttribute('source', $this->formatSource($match['matcherClass'] ?? ''));
                 $xml->endElement(); // error
             }
@@ -89,13 +90,5 @@ class CheckstyleOutputFormatter implements OutputFormatterInterface
         $parts = explode('\\', $matcherClass);
         $className = end($parts) ?: 'Unknown';
         return 'TYPO3.ExtensionScanner.' . str_replace('Matcher', '', $className);
-    }
-
-    /**
-     * Escape special characters for XML attributes.
-     */
-    private function escapeXmlAttribute(string $value): string
-    {
-        return htmlspecialchars($value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
     }
 }

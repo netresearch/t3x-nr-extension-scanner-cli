@@ -38,6 +38,6 @@ interface OutputFormatterInterface
         OutputInterface $output,
         array $allMatches,
         int $totalStrong,
-        int $totalWeak
+        int $totalWeak,
     ): void;
 }

@@ -30,14 +30,14 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class TableOutputFormatter implements OutputFormatterInterface
 {
     public function __construct(
-        private readonly SymfonyStyle $io
+        private readonly SymfonyStyle $io,
     ) {}
 
     public function format(
         OutputInterface $output,
         array $allMatches,
         int $totalStrong,
-        int $totalWeak
+        int $totalWeak,
     ): void {
         $totalMatches = $totalStrong + $totalWeak;
 
@@ -86,14 +86,14 @@ class TableOutputFormatter implements OutputFormatterInterface
         if ($totalStrong > 0) {
             $this->io->error(sprintf(
                 'Found %d strong match(es) that WILL break on upgrade.',
-                $totalStrong
+                $totalStrong,
             ));
         }
 
         if ($totalWeak > 0) {
             $this->io->warning(sprintf(
                 'Found %d weak match(es) that MAY need attention.',
-                $totalWeak
+                $totalWeak,
             ));
         }
 

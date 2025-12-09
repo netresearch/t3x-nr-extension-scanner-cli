@@ -30,7 +30,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Package\PackageManager;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * CLI command to scan extensions for deprecated/removed TYPO3 API usage.
@@ -50,7 +49,7 @@ class ExtensionScannerCommand extends Command
 
     public function __construct(
         private readonly ExtensionScannerService $scannerService,
-        private readonly PackageManager $packageManager
+        private readonly PackageManager $packageManager,
     ) {
         parent::__construct();
     }
@@ -60,61 +59,61 @@ class ExtensionScannerCommand extends Command
         $this->setDescription('Scan extension code for deprecated/removed TYPO3 API usage')
             ->setHelp(
                 'This command scans PHP files in extensions for usage of deprecated or removed ' .
-                'TYPO3 Core API. It can be used in CI/CD pipelines to detect compatibility issues.' . LF . LF .
-                'Examples:' . LF .
-                '  <info>bin/typo3 extension:scan my_extension</info>' . LF .
-                '  <info>bin/typo3 extension:scan --path=/path/to/extension</info>' . LF .
-                '  <info>bin/typo3 extension:scan my_extension --format=json</info>' . LF .
-                '  <info>bin/typo3 extension:scan --all --format=checkstyle > report.xml</info>'
+                'TYPO3 Core API. It can be used in CI/CD pipelines to detect compatibility issues.' . PHP_EOL . PHP_EOL .
+                'Examples:' . PHP_EOL .
+                '  <info>bin/typo3 extension:scan my_extension</info>' . PHP_EOL .
+                '  <info>bin/typo3 extension:scan --path=/path/to/extension</info>' . PHP_EOL .
+                '  <info>bin/typo3 extension:scan my_extension --format=json</info>' . PHP_EOL .
+                '  <info>bin/typo3 extension:scan --all --format=checkstyle > report.xml</info>',
             )
             ->addArgument(
                 'extensions',
                 InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
                 'Extension key(s) to scan. If not provided, use --path or --all.',
-                []
+                [],
             )
             ->addOption(
                 'path',
                 'p',
                 InputOption::VALUE_REQUIRED,
-                'Custom path to scan (alternative to extension key)'
+                'Custom path to scan (alternative to extension key)',
             )
             ->addOption(
                 'all',
                 'a',
                 InputOption::VALUE_NONE,
-                'Scan all loaded third-party extensions'
+                'Scan all loaded third-party extensions',
             )
             ->addOption(
                 'format',
                 'f',
                 InputOption::VALUE_REQUIRED,
                 'Output format: table (default), json, checkstyle',
-                'table'
+                'table',
             )
             ->addOption(
                 'no-progress',
                 null,
                 InputOption::VALUE_NONE,
-                'Disable progress output'
+                'Disable progress output',
             )
             ->addOption(
                 'fail-on-weak',
                 null,
                 InputOption::VALUE_NONE,
-                'Return non-zero exit code on weak matches (by default only strong matches cause failure)'
+                'Return non-zero exit code on weak matches (by default only strong matches cause failure)',
             )
             ->addOption(
                 'include-system',
                 null,
                 InputOption::VALUE_NONE,
-                'Include TYPO3 system extensions when using --all'
+                'Include TYPO3 system extensions when using --all',
             )
             ->addOption(
                 'verbose-parse-errors',
                 null,
                 InputOption::VALUE_NONE,
-                'Show parse errors for files that cannot be analyzed'
+                'Show parse errors for files that cannot be analyzed',
             );
     }
 
@@ -146,7 +145,7 @@ class ExtensionScannerCommand extends Command
             $customPath,
             $scanAll,
             $includeSystem,
-            $io
+            $io,
         );
 
         if ($pathsToScan === null) {
@@ -173,7 +172,7 @@ class ExtensionScannerCommand extends Command
                 $io,
                 $noProgress,
                 $format,
-                $verboseParseErrors
+                $verboseParseErrors,
             );
             $allMatches[$extensionKey] = $extensionMatches;
 
@@ -208,7 +207,7 @@ class ExtensionScannerCommand extends Command
         ?string $customPath,
         bool $scanAll,
         bool $includeSystem,
-        SymfonyStyle $io
+        SymfonyStyle $io,
     ): ?array {
         $pathsToScan = [];
 
@@ -253,7 +252,7 @@ class ExtensionScannerCommand extends Command
         SymfonyStyle $io,
         bool $noProgress,
         string $format,
-        bool $verboseParseErrors
+        bool $verboseParseErrors,
     ): array {
         $progressCallback = null;
         if (!$noProgress && $format === 'table') {
