@@ -20,3 +20,4 @@ parameters:
         - '#Parameter .* has typehint with internal class TYPO3\\CMS\\Install\\ExtensionScanner#'
         - '#Access to constant on internal class TYPO3\\CMS\\Install\\ExtensionScanner#'
         - '#Call to internal method TYPO3\\CMS\\Core\\Package\\PackageInterface::getValueFromComposerManifest#'
+        - '#Call to internal static method TYPO3\\CMS\\Core\\Core\\Bootstrap::initializeBackendAuthentication#'
