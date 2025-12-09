@@ -1,0 +1,16 @@
+includes:
+    - %currentWorkingDirectory%/.Build/vendor/phpstan/phpstan/conf/bleedingEdge.neon
+
+parameters:
+    level: 8
+    paths:
+        - %currentWorkingDirectory%/Classes
+    excludePaths:
+        - %currentWorkingDirectory%/.Build/*
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        # Using @internal TYPO3 Core classes intentionally
+        - '#Call to method .+ of internal class TYPO3\\CMS\\Install\\ExtensionScanner#'
+        - '#Instantiation of internal class TYPO3\\CMS\\Install\\ExtensionScanner#'
+        - '#Class TYPO3\\CMS\\Install\\ExtensionScanner\\Php\\Matcher\\.+ is internal#'

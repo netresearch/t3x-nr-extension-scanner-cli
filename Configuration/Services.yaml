@@ -1,0 +1,19 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Netresearch\ExtensionScannerCli\:
+    resource: '../Classes/*'
+    exclude: '../Classes/Domain/Model/*'
+
+  Netresearch\ExtensionScannerCli\Service\ExtensionScannerService:
+    public: true
+
+  Netresearch\ExtensionScannerCli\Command\ExtensionScannerCommand:
+    tags:
+      - name: console.command
+        command: 'extension:scan'
+        description: 'Scan extension code for deprecated/removed TYPO3 API usage'
+        schedulable: false

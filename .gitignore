@@ -1,0 +1,24 @@
+# Build artifacts
+.Build/
+vendor/
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TYPO3
+var/
+public/typo3temp/
+
+# Testing
+.phpunit.result.cache
+.php-cs-fixer.cache
+
+# Composer
+composer.lock

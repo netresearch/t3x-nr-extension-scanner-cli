@@ -1,0 +1,66 @@
+{
+    "name": "netresearch/extension-scanner-cli",
+    "type": "typo3-cms-extension",
+    "description": "CLI command to scan TYPO3 extensions for deprecated/removed API usage - by Netresearch",
+    "license": "GPL-2.0-or-later",
+    "keywords": [
+        "TYPO3",
+        "extension",
+        "scanner",
+        "deprecation",
+        "upgrade",
+        "CLI",
+        "CI/CD"
+    ],
+    "authors": [
+        {
+            "name": "Netresearch DTT GmbH",
+            "email": "info@netresearch.de",
+            "homepage": "https://www.netresearch.de"
+        }
+    ],
+    "homepage": "https://github.com/netresearch/extension-scanner-cli",
+    "support": {
+        "issues": "https://github.com/netresearch/extension-scanner-cli/issues",
+        "source": "https://github.com/netresearch/extension-scanner-cli"
+    },
+    "require": {
+        "php": "^8.2",
+        "typo3/cms-core": "^12.4 || ^13.4",
+        "typo3/cms-install": "^12.4 || ^13.4"
+    },
+    "require-dev": {
+        "typo3/testing-framework": "^8.0",
+        "phpstan/phpstan": "^1.10",
+        "friendsofphp/php-cs-fixer": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Netresearch\\ExtensionScannerCli\\": "Classes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Netresearch\\ExtensionScannerCli\\Tests\\": "Tests/"
+        }
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "extension_scanner_cli"
+        }
+    },
+    "config": {
+        "vendor-dir": ".Build/vendor",
+        "bin-dir": ".Build/bin",
+        "sort-packages": true,
+        "allow-plugins": {
+            "typo3/cms-composer-installers": true,
+            "typo3/class-alias-loader": true
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
+        ]
+    }
+}
