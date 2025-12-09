@@ -2,7 +2,7 @@
 
 [![TYPO3 12](https://img.shields.io/badge/TYPO3-12-orange.svg)](https://get.typo3.org/version/12)
 [![TYPO3 13](https://img.shields.io/badge/TYPO3-13-orange.svg)](https://get.typo3.org/version/13)
-[![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 CLI command to scan TYPO3 extensions for deprecated/removed API usage. Provides the Install Tool Extension Scanner functionality on the command line for CI/CD integration.
 
@@ -24,7 +24,7 @@ composer require --dev netresearch/extension-scanner-cli
 
 ### TYPO3 Extension Repository (TER)
 
-Download and install `extension_scanner_cli` from the TYPO3 Extension Repository.
+Download and install `nr_extension_scanner_cli` from the TYPO3 Extension Repository.
 
 ## Usage
 
@@ -200,7 +200,9 @@ This extension reuses the existing Extension Scanner infrastructure from `EXT:in
 
 ## License
 
-This project is licensed under the GNU General Public License v2.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Documentation is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 ## Contributing
 

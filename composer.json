@@ -2,7 +2,7 @@
     "name": "netresearch/extension-scanner-cli",
     "type": "typo3-cms-extension",
     "description": "CLI command to scan TYPO3 extensions for deprecated/removed API usage - by Netresearch",
-    "license": "GPL-2.0-or-later",
+    "license": "MIT",
     "keywords": [
         "TYPO3",
         "extension",
@@ -19,10 +19,10 @@
             "homepage": "https://www.netresearch.de"
         }
     ],
-    "homepage": "https://github.com/netresearch/extension-scanner-cli",
+    "homepage": "https://github.com/netresearch/t3x-nr-extension-scanner-cli",
     "support": {
-        "issues": "https://github.com/netresearch/extension-scanner-cli/issues",
-        "source": "https://github.com/netresearch/extension-scanner-cli"
+        "issues": "https://github.com/netresearch/t3x-nr-extension-scanner-cli/issues",
+        "source": "https://github.com/netresearch/t3x-nr-extension-scanner-cli"
     },
     "require": {
         "php": "^8.2",
@@ -46,7 +46,7 @@
     },
     "extra": {
         "typo3/cms": {
-            "extension-key": "extension_scanner_cli"
+            "extension-key": "nr_extension_scanner_cli"
         }
     },
     "config": {

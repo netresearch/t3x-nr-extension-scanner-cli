@@ -22,3 +22,7 @@ public/typo3temp/
 
 # Composer
 composer.lock
+
+# AI Tools
+.serena/
+claudedocs/

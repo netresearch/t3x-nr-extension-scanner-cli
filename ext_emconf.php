@@ -1,7 +1,7 @@
 <?php
 
 $EM_CONF[$_EXTKEY] = [
-    'title' => 'Extension Scanner CLI',
+    'title' => 'NR Extension Scanner CLI',
     'description' => 'CLI command to scan TYPO3 extensions for deprecated/removed API usage - by Netresearch',
     'category' => 'misc',
     'author' => 'Netresearch DTT GmbH',

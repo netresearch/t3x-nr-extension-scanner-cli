@@ -5,7 +5,7 @@ Extension Scanner CLI
 =====================
 
 :Extension key:
-   extension_scanner_cli
+   nr_extension_scanner_cli
 
 :Package name:
    netresearch/extension-scanner-cli
@@ -21,7 +21,7 @@ Extension Scanner CLI
 
 :License:
    This document is published under the
-   `GNU General Public License v2.0 <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>`__.
+   `Creative Commons BY 4.0 <https://creativecommons.org/licenses/by/4.0/>`__ license.
 
 :Rendered:
    |today|

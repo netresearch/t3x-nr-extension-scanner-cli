@@ -56,8 +56,8 @@ Enhancement suggestions are welcome! Please include:
 
 ```bash
 # Clone the repository
-git clone https://github.com/netresearch/extension-scanner-cli.git
-cd extension-scanner-cli
+git clone https://github.com/netresearch/t3x-nr-extension-scanner-cli.git
+cd t3x-nr-extension-scanner-cli
 
 # Start DDEV
 ddev start
@@ -191,4 +191,4 @@ Releases are managed by maintainers following semantic versioning:
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the GPL-2.0-or-later license.
+By contributing, you agree that your contributions will be licensed under the MIT license.
