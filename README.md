@@ -2,6 +2,7 @@
 
 [![TYPO3 12](https://img.shields.io/badge/TYPO3-12-orange.svg)](https://get.typo3.org/version/12)
 [![TYPO3 13](https://img.shields.io/badge/TYPO3-13-orange.svg)](https://get.typo3.org/version/13)
+[![TYPO3 14](https://img.shields.io/badge/TYPO3-14-orange.svg)](https://get.typo3.org/version/14)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 CLI command to scan TYPO3 extensions for deprecated/removed API usage. Provides the Install Tool Extension Scanner functionality on the command line for CI/CD integration.
@@ -195,7 +196,7 @@ This extension reuses the existing Extension Scanner infrastructure from `EXT:in
 
 ## Requirements
 
-- TYPO3 12.4 LTS or 13.4 LTS
+- TYPO3 12.4 LTS, 13.4 LTS, or 14.x
 - PHP 8.2 or higher
 
 ## License

@@ -56,6 +56,7 @@ jobs:
         typo3-version:
           - '^12.4'
           - '^13.4'
+          - '^14.0'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -82,6 +83,7 @@ jobs:
         typo3-version:
           - '^12.4'
           - '^13.4'
+          - '^14.0'
         php-version:
           - '8.2'
           - '8.3'
