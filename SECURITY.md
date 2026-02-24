@@ -13,7 +13,7 @@ We take security vulnerabilities seriously. If you discover a security issue, pl
 ### How to Report
 
 1. **Do NOT** open a public GitHub issue for security vulnerabilities
-2. Send an email to **security@netresearch.de** with:
+2. Send an email to **[GitHub Security Advisories](https://github.com/netresearch/t3x-nr-extension-scanner-cli/security/advisories/new)** with:
    - Description of the vulnerability
    - Steps to reproduce
    - Potential impact
@@ -55,6 +55,6 @@ This extension:
 
 ## Contact
 
-- Security issues: security@netresearch.de
-- General support: info@netresearch.de
+- Security issues: [GitHub Security Advisories](https://github.com/netresearch/t3x-nr-extension-scanner-cli/security/advisories/new)
+- General support: [https://github.com/netresearch/t3x-nr-extension-scanner-cli/issues](https://github.com/netresearch/t3x-nr-extension-scanner-cli/issues)
 - Website: https://www.netresearch.de
