@@ -8,7 +8,7 @@ declare(strict_types=1);
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
  *
- * (c) Netresearch DTT GmbH <info@netresearch.de>
+ * (c) Netresearch DTT GmbH
  */
 
 namespace Netresearch\ExtensionScannerCli\Service;

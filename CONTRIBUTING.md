@@ -186,7 +186,7 @@ Releases are managed by maintainers following semantic versioning:
 ## Questions?
 
 - Open an issue for questions
-- Contact: info@netresearch.de
+- Contact: [GitHub Issues](https://github.com/netresearch/t3x-nr-extension-scanner-cli/issues)
 - Website: https://www.netresearch.de
 
 ## License
