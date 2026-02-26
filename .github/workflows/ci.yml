@@ -1,146 +1,19 @@
 name: CI
-
 on:
   push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
-
-# Explicitly set minimal permissions (principle of least privilege)
-permissions:
-  contents: read
-
+permissions: {}
 jobs:
-  php-lint:
-    name: PHP Lint
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-version:
-          - '8.2'
-          - '8.3'
-          - '8.4'
-          - '8.5'
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@a90bcbc6539c36a85cdfeb73f7e2f433735f215b # v2.15.0
-        with:
-          egress-policy: audit
-
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # v2.36.0
-        with:
-          php-version: ${{ matrix.php-version }}
-          tools: composer:v2
-
-      - name: PHP Lint
-        run: find Classes Tests -name '*.php' -exec php -l {} \;
-
-  coding-standards:
-    name: Coding Standards
-    runs-on: ubuntu-latest
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@a90bcbc6539c36a85cdfeb73f7e2f433735f215b # v2.15.0
-        with:
-          egress-policy: audit
-
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # v2.36.0
-        with:
-          php-version: '8.2'
-          tools: composer:v2
-
-      - name: Install dependencies
-        run: composer install --no-progress --no-interaction
-
-      - name: Check coding standards
-        run: .Build/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff
-
-  phpstan:
-    name: PHPStan
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        typo3-version:
-          - '^12.4'
-          - '^13.4'
-          - '^14.0'
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@a90bcbc6539c36a85cdfeb73f7e2f433735f215b # v2.15.0
-        with:
-          egress-policy: audit
-
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # v2.36.0
-        with:
-          php-version: '8.2'
-          tools: composer:v2
-
-      - name: Install dependencies
-        run: |
-          composer require typo3/cms-core:${{ matrix.typo3-version }} typo3/cms-install:${{ matrix.typo3-version }} --no-progress --no-interaction
-          composer require --dev phpstan/phpstan --no-progress --no-interaction
-
-      - name: Run PHPStan
-        run: .Build/bin/phpstan analyse -c Build/phpstan/phpstan.neon
-
-  unit-tests:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        typo3-version:
-          - '^12.4'
-          - '^13.4'
-          - '^14.0'
-        php-version:
-          - '8.2'
-          - '8.3'
-          - '8.4'
-          - '8.5'
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@a90bcbc6539c36a85cdfeb73f7e2f433735f215b # v2.15.0
-        with:
-          egress-policy: audit
-
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # v2.36.0
-        with:
-          php-version: ${{ matrix.php-version }}
-          tools: composer:v2
-          coverage: pcov
-
-      - name: Install dependencies
-        run: |
-          composer require typo3/cms-core:${{ matrix.typo3-version }} typo3/cms-install:${{ matrix.typo3-version }} --no-progress --no-interaction
-
-      - name: Run unit tests
-        run: .Build/bin/phpunit -c phpunit.xml --testsuite "Unit Tests"
-
-      - name: Run unit tests with coverage
-        if: matrix.php-version == '8.2' && matrix.typo3-version == '^13.4'
-        run: .Build/bin/phpunit -c phpunit.xml --testsuite "Unit Tests" --coverage-clover .Build/logs/clover.xml
-
-      - name: Upload coverage to Codecov
-        if: matrix.php-version == '8.2' && matrix.typo3-version == '^13.4'
-        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
-        with:
-          files: .Build/logs/clover.xml
-          fail_ci_if_error: false
+  ci:
+    uses: netresearch/typo3-ci-workflows/.github/workflows/ci.yml@main
+    permissions:
+      contents: read
+    with:
+      php-versions: '["8.2", "8.3", "8.4", "8.5"]'
+      typo3-versions: '["^12.4", "^13.4", "^14.0"]'
+      typo3-packages: '["typo3/cms-core", "typo3/cms-install"]'
+      cgl-command: '.Build/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff'
+      phpstan-command: '.Build/bin/phpstan analyse -c Build/phpstan/phpstan.neon --error-format=github'
+      unit-test-command: '.Build/bin/phpunit -c phpunit.xml --testsuite "Unit Tests"'
+      run-rector: false
+      run-functional-tests: false
