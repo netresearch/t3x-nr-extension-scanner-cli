@@ -12,8 +12,5 @@ jobs:
       php-versions: '["8.2", "8.3", "8.4", "8.5"]'
       typo3-versions: '["^12.4", "^13.4", "^14.0"]'
       typo3-packages: '["typo3/cms-core", "typo3/cms-install"]'
-      cgl-command: '.Build/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff'
-      phpstan-command: '.Build/bin/phpstan analyse -c Build/phpstan/phpstan.neon --error-format=github'
-      unit-test-command: '.Build/bin/phpunit -c phpunit.xml --testsuite "Unit Tests"'
       run-rector: false
       run-functional-tests: false

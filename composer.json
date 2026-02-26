@@ -73,6 +73,11 @@
     "scripts": {
         "post-autoload-dump": [
             "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
-        ]
+        ],
+        "ci:cgl": "php-cs-fixer fix --config=.php-cs-fixer.dist.php",
+        "ci:test:php:cgl": "@ci:cgl -- --dry-run --diff",
+        "ci:test:php:phpstan": "phpstan analyse -c Build/phpstan/phpstan.neon --error-format=github",
+        "ci:test:php:unit": "phpunit -c phpunit.xml --testsuite \"Unit Tests\"",
+        "ci:test:php:functional": "phpunit -c phpunit.xml --testsuite \"Functional Tests\""
     }
 }
