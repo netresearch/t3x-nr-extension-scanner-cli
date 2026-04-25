@@ -1,0 +1,12 @@
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: ['**/*.md', 'Documentation/**/*', 'docs/**/*']
+ci:
+  - changed-files:
+      - any-glob-to-any-file: ['.github/**/*', 'Build/**/*']
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file: ['composer.json', 'composer.lock', 'package.json', 'package-lock.json']
+tests:
+  - changed-files:
+      - any-glob-to-any-file: ['Tests/**/*', '**/*Test.php']
