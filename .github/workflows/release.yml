@@ -15,8 +15,8 @@ jobs:
       id-token: write
       attestations: write
     with:
-      archive-prefix: extension-scanner-cli
-      package-name: netresearch/extension-scanner-cli
-      extension-key: nr_extension_scanner_cli
+      archive-prefix: 'extension-scanner-cli'
+      package-name: 'netresearch/extension-scanner-cli'
+      extension-key: 'nr_extension_scanner_cli'
     secrets:
       TYPO3_TER_ACCESS_TOKEN: ${{ secrets.TYPO3_TER_ACCESS_TOKEN }}
