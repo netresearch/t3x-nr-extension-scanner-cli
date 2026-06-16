@@ -8,15 +8,45 @@ on:
 permissions: {}
 
 jobs:
+  # Per-extension release metadata (archive-prefix / package-name /
+  # extension-key) lives in .github/typo3-ci.json so THIS file stays
+  # byte-identical and drift-enforced. Customize them in typo3-ci.json
+  # (listed under intentional-drift in .github/template.yaml).
+  config:
+    name: Resolve release metadata
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      archive-prefix: ${{ steps.meta.outputs.archive_prefix }}
+      package-name: ${{ steps.meta.outputs.package_name }}
+      extension-key: ${{ steps.meta.outputs.extension_key }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Read .github/typo3-ci.json
+        id: meta
+        run: |
+          set -euo pipefail
+          f=.github/typo3-ci.json
+          {
+            echo "archive_prefix=$(jq -r '."archive-prefix"' "$f")"
+            echo "package_name=$(jq -r '."package-name"' "$f")"
+            echo "extension_key=$(jq -r '."extension-key"' "$f")"
+          } >> "$GITHUB_OUTPUT"
+
   release:
+    needs: config
     uses: netresearch/typo3-ci-workflows/.github/workflows/release-typo3-extension.yml@main
     permissions:
       contents: write
       id-token: write
       attestations: write
     with:
-      archive-prefix: extension-scanner-cli
-      package-name: netresearch/extension-scanner-cli
-      extension-key: nr_extension_scanner_cli
+      archive-prefix: ${{ needs.config.outputs.archive-prefix }}
+      package-name: ${{ needs.config.outputs.package-name }}
+      extension-key: ${{ needs.config.outputs.extension-key }}
     secrets:
       TYPO3_TER_ACCESS_TOKEN: ${{ secrets.TYPO3_TER_ACCESS_TOKEN }}

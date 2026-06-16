@@ -2,21 +2,52 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
   merge_group:
   schedule:
     - cron: '0 6 * * 1'
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
+  # All extension-specific CI values (PHP/TYPO3 matrix + release metadata) live
+  # in .github/typo3-ci.json so THIS file stays byte-identical and
+  # drift-enforced across every typo3-extension. Customize them in
+  # typo3-ci.json (listed under intentional-drift in .github/template.yaml);
+  # do not edit this workflow.
+  config:
+    name: Resolve CI matrix
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      php-versions: ${{ steps.matrix.outputs.php }}
+      typo3-versions: ${{ steps.matrix.outputs.typo3 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Read .github/typo3-ci.json
+        id: matrix
+        run: |
+          set -euo pipefail
+          f=.github/typo3-ci.json
+          {
+            echo "php=$(jq -c '."php-versions"' "$f")"
+            echo "typo3=$(jq -c '."typo3-versions"' "$f")"
+          } >> "$GITHUB_OUTPUT"
+
   ci:
+    needs: config
     uses: netresearch/typo3-ci-workflows/.github/workflows/ci.yml@main
     permissions:
       contents: read
     with:
-        php-versions: '["8.2","8.3","8.4","8.5"]'
-        typo3-versions: '["^12.4","^13.4","^14.3"]'
+      php-versions: ${{ needs.config.outputs.php-versions }}
+      typo3-versions: ${{ needs.config.outputs.typo3-versions }}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
