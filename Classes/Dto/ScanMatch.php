@@ -101,7 +101,7 @@ final readonly class ScanMatch
             indicator: isset($rawMatch['indicator']) && \is_string($rawMatch['indicator']) ? $rawMatch['indicator'] : 'strong',
             message: isset($rawMatch['message']) && \is_string($rawMatch['message']) ? $rawMatch['message'] : 'Unknown issue',
             matcherClass: $matcherClass,
-            restFiles: \is_array($restFiles) ? array_values(array_filter($restFiles, '\is_string')) : [],
+            restFiles: \is_array($restFiles) ? array_values(array_filter($restFiles, \is_string(...))) : [],
         );
     }
 

@@ -32,6 +32,7 @@
     "require-dev": {
         "phpstan/phpstan": "^2.0",
         "friendsofphp/php-cs-fixer": "^3.0",
+        "netresearch/typo3-ci-workflows": "^1.3",
         "typo3/testing-framework": "^8.0 || ^9.0"
     },
     "autoload": {
@@ -55,7 +56,11 @@
         "sort-packages": true,
         "allow-plugins": {
             "typo3/cms-composer-installers": true,
-            "typo3/class-alias-loader": true
+            "typo3/class-alias-loader": true,
+            "a9f/fractor-extension-installer": true,
+            "infection/extension-installer": true,
+            "captainhook/hook-installer": true,
+            "phpstan/extension-installer": false
         },
         "audit": {
             "ignore": [
@@ -75,7 +80,9 @@
             "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
         ],
         "ci:cgl": "php-cs-fixer fix --config=.php-cs-fixer.dist.php",
+        "ci:rector": "rector process --config Build/rector.php",
         "ci:test:php:cgl": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff",
+        "ci:test:php:rector": "rector process --config Build/rector.php --dry-run",
         "ci:test:php:phpstan": "phpstan analyse -c Build/phpstan/phpstan.neon --error-format=github",
         "ci:test:php:unit": "phpunit -c phpunit.xml --testsuite \"Unit Tests\"",
         "ci:test:php:functional": "phpunit -c phpunit.xml --testsuite \"Functional Tests\""

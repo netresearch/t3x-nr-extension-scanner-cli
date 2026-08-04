@@ -158,7 +158,7 @@ class ExtensionScannerCommand extends Command
             return Command::FAILURE;
         }
 
-        if (empty($pathsToScan)) {
+        if ($pathsToScan === []) {
             $io->warning('No extensions found to scan');
 
             return Command::SUCCESS;
@@ -196,6 +196,7 @@ class ExtensionScannerCommand extends Command
         if ($totalStrong > 0) {
             return Command::FAILURE;
         }
+
         if ($failOnWeak && $totalWeak > 0) {
             return 2; // Custom exit code for weak-only matches
         }
@@ -225,6 +226,7 @@ class ExtensionScannerCommand extends Command
 
                 return null;
             }
+
             $pathsToScan['custom'] = rtrim($customPath, '/');
         } elseif ($scanAll) {
             foreach ($this->packageManager->getActivePackages() as $package) {
@@ -232,15 +234,17 @@ class ExtensionScannerCommand extends Command
                 if (!$includeSystem && $package->getValueFromComposerManifest('type') === 'typo3-cms-framework') {
                     continue;
                 }
+
                 $pathsToScan[$package->getPackageKey()] = $package->getPackagePath();
             }
-        } elseif (!empty($extensions)) {
+        } elseif ($extensions !== []) {
             foreach ($extensions as $extensionKey) {
                 if (!$this->packageManager->isPackageActive($extensionKey)) {
                     $io->error(\sprintf('Extension not found or not active: %s', $extensionKey));
 
                     return null;
                 }
+
                 $package = $this->packageManager->getPackage($extensionKey);
                 $pathsToScan[$extensionKey] = $package->getPackagePath();
             }

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Netresearch\ExtensionScannerCli\Service;
 
 use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
+use PhpParser\Error;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser;
@@ -159,14 +160,14 @@ class ExtensionScannerService
         ?callable $parseErrorCallback = null,
     ): array {
         $matches = [];
-        $parser = $parser ?? $this->getParser();
-        $matcherConfigurations = $matcherConfigurations ?? $this->getMatcherConfigurations();
+        $parser ??= $this->getParser();
+        $matcherConfigurations ??= $this->getMatcherConfigurations();
 
         $fileContent = $file->getContents();
 
         try {
             $statements = $parser->parse($fileContent);
-        } catch (\PhpParser\Error $e) {
+        } catch (Error $e) {
             if ($parseErrorCallback !== null) {
                 $parseErrorCallback($file->getRelativePathname(), $e->getMessage());
             }
@@ -297,7 +298,7 @@ class ExtensionScannerService
      */
     private function getParser(): Parser
     {
-        if ($this->parser === null) {
+        if (!$this->parser instanceof Parser) {
             $this->parser = (new ParserFactory())->createForNewestSupportedVersion();
         }
 

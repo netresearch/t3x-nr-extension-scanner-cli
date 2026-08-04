@@ -8,6 +8,8 @@ use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use TYPO3\CMS\Install\ExtensionScanner\Php\Matcher\MethodCallMatcher;
+use TYPO3\CMS\Install\ExtensionScanner\Php\Matcher\MethodCallStaticMatcher;
 
 #[CoversClass(ScanMatch::class)]
 final class ScanMatchTest extends TestCase
@@ -61,7 +63,7 @@ final class ScanMatchTest extends TestCase
             1,
             'strong',
             'msg',
-            'TYPO3\\CMS\\Install\\ExtensionScanner\\Php\\Matcher\\MethodCallMatcher',
+            MethodCallMatcher::class,
         );
 
         self::assertSame('MethodCallMatcher', $match->getMatcherName());
@@ -84,7 +86,7 @@ final class ScanMatchTest extends TestCase
             1,
             'strong',
             'msg',
-            'TYPO3\\CMS\\Install\\ExtensionScanner\\Php\\Matcher\\MethodCallStaticMatcher',
+            MethodCallStaticMatcher::class,
         );
 
         self::assertSame('Method Call Static', $match->getMatchType());
