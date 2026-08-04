@@ -50,6 +50,7 @@ class CheckstyleOutputFormatter implements OutputFormatterInterface
                 if (!isset($matchesByFile[$absolutePath])) {
                     $matchesByFile[$absolutePath] = [];
                 }
+
                 $matchesByFile[$absolutePath][] = $match;
             }
         }

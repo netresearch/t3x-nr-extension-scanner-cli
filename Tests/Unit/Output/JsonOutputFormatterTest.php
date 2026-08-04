@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Output\BufferedOutput;
+use TYPO3\CMS\Install\ExtensionScanner\Php\Matcher\MethodCallMatcher;
 
 #[CoversClass(JsonOutputFormatter::class)]
 final class JsonOutputFormatterTest extends TestCase
@@ -84,7 +85,7 @@ final class JsonOutputFormatterTest extends TestCase
                     42,
                     'strong',
                     'Deprecated API usage',
-                    'TYPO3\\CMS\\Install\\ExtensionScanner\\Php\\Matcher\\MethodCallMatcher',
+                    MethodCallMatcher::class,
                     ['Deprecation-12345.rst'],
                 ),
             ],
