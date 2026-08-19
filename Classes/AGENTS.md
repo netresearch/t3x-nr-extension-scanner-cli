@@ -1,10 +1,10 @@
-<!-- Managed by agent: keep sections & order; edit content, not structure. Last updated: 2025-12-09 -->
+<!-- Managed by agent: keep sections & order; edit content, not structure. Last updated: 2026-08-19 -->
 
 # AGENTS.md (Classes/)
 
 Backend PHP source code for the Extension Scanner CLI.
 
-## 1. Overview
+## Overview
 
 This directory contains all PHP source code for the extension:
 - **Command/** — Symfony Console commands registered via Services.yaml
@@ -12,7 +12,7 @@ This directory contains all PHP source code for the extension:
 - **Output/** — Output formatter implementations (Strategy pattern)
 - **Service/** — Core business logic services
 
-## 2. Setup & Environment
+## Setup & Environment
 
 ```bash
 # Start DDEV environment
@@ -25,28 +25,30 @@ ddev composer install
 ddev exec php -v
 ```
 
-**Requirements:** PHP 8.2+, TYPO3 12.4/13.4/14.0, Composer 2
+**Requirements:** PHP 8.2+, TYPO3 12.4/13.4/14.3, Composer 2
 
-## 3. Build & Tests
+## Build & Tests
 
 ```bash
-# Run all tests
-ddev exec .Build/bin/phpunit -c phpunit.xml
+# Run all tests (unit + functional)
+make test
 
 # Run specific test file
-ddev exec .Build/bin/phpunit -c phpunit.xml Tests/Unit/Dto/ScanMatchTest.php
+.Build/bin/phpunit -c phpunit.xml Tests/Unit/Dto/ScanMatchTest.php
 
-# Static analysis
-ddev exec .Build/bin/phpstan analyse
+# Static analysis (config: Build/phpstan/phpstan.neon)
+composer ci:test:php:phpstan
 
-# Code style check
-ddev exec .Build/bin/php-cs-fixer fix --dry-run --diff
+# Code style check (config: .php-cs-fixer.dist.php)
+composer ci:test:php:cgl
 
 # Code style fix
-ddev exec .Build/bin/php-cs-fixer fix
+composer ci:cgl
 ```
 
-## 4. Code Style & Conventions
+Inside DDEV, prefix commands with `ddev exec`.
+
+## Code Style & Conventions
 
 ### PHP Standards
 - **PSR-12** coding style (enforced by php-cs-fixer)
@@ -93,25 +95,25 @@ public function __construct(
 $service = GeneralUtility::makeInstance(ExtensionScannerService::class);
 ```
 
-## 5. Security & Safety
+## Security & Safety
 
 - **Never log** extension paths containing sensitive data
 - **Validate all paths** before filesystem operations
 - **Use TYPO3's** `GeneralUtility::getFileAbsFileName()` for path resolution
 - **Escape XML output** in CheckstyleOutputFormatter (htmlspecialchars)
 
-## 6. PR/Commit Checklist
+## PR/Commit Checklist
 
 Before committing changes to Classes/:
 
-- [ ] `ddev exec .Build/bin/php-cs-fixer fix` passes
-- [ ] `ddev exec .Build/bin/phpstan analyse` passes (level 10)
-- [ ] `ddev exec .Build/bin/phpunit` passes
+- [ ] `composer ci:test:php:cgl` passes
+- [ ] `composer ci:test:php:phpstan` passes (level 10)
+- [ ] `composer ci:test:php:unit` passes
 - [ ] New public methods have PHPDoc with `@param` and `@return`
 - [ ] DTOs use `final readonly class`
 - [ ] Services use constructor injection
 
-## 7. Good vs Bad Examples
+## Good vs Bad Examples
 
 ### Adding a New Output Formatter
 
@@ -151,14 +153,14 @@ if ($match->isStrong()) {
 $indicator = $rawMatch['indicator'] ?? 'strong';
 ```
 
-## 8. When Stuck
+## When Stuck
 
 - **TYPO3 Scanner Matchers:** See `EXT:install/Classes/ExtensionScanner/Php/Matcher/`
 - **Service Configuration:** Check `Configuration/Services.yaml`
 - **Console Commands:** TYPO3 docs on Symfony Console integration
 - **PHPStan Errors:** Often need `@phpstan-` annotations for TYPO3 core code
 
-## 9. House Rules (Scope-Specific)
+## House Rules (Scope-Specific)
 
 - **Internal TYPO3 APIs:** This extension uses `@internal` TYPO3 classes (matchers). Document any such usage with a comment explaining why it's acceptable.
 - **Array Types:** Always use generic syntax `array<string, mixed>` or `list<Type>`

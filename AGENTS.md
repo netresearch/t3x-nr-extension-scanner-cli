@@ -1,4 +1,4 @@
-<!-- Managed by agent: keep sections & order; edit content, not structure. Last updated: 2025-12-09 -->
+<!-- Managed by agent: keep sections & order; edit content, not structure. Last updated: 2026-08-19 -->
 
 # AGENTS.md (root)
 
@@ -8,7 +8,7 @@
 
 TYPO3 Extension Scanner CLI (`nr_extension_scanner_cli`) - CLI command to scan TYPO3 extensions for deprecated/removed API usage. Enables CI/CD integration for upgrade compatibility checking.
 
-**Author:** Netresearch DTT GmbH | **License:** MIT | **TYPO3:** 12.4, 13.4, 14.0 | **PHP:** 8.2+
+**Author:** Netresearch DTT GmbH | **License:** MIT | **TYPO3:** 12.4, 13.4, 14.3 | **PHP:** 8.2+ (see `composer.json` / `ext_emconf.php` for the authoritative constraints)
 
 ## Global Rules
 
@@ -19,16 +19,23 @@ TYPO3 Extension Scanner CLI (`nr_extension_scanner_cli`) - CLI command to scan T
 - Follow PSR-12 coding standards
 - Maintain PHPStan level 10 compliance
 
-## Pre-commit Checks
+## Commands
+
+Make targets wrap the composer `ci:*` scripts (see `Makefile` and `composer.json`). Inside DDEV, prefix with `ddev exec`.
 
 | Check | Command |
 |-------|---------|
-| Lint | `ddev exec .Build/bin/php-cs-fixer fix --dry-run --diff` |
-| Static Analysis | `ddev exec .Build/bin/phpstan analyse` |
-| Tests | `ddev exec .Build/bin/phpunit -c phpunit.xml` |
-| All Checks | `ddev exec composer test` (when configured) |
+| Code style (check) | `make cgl` (= `composer ci:test:php:cgl`) |
+| Code style (fix) | `make cgl-fix` (= `composer ci:cgl`) |
+| Static analysis | `make phpstan` (= `composer ci:test:php:phpstan`) |
+| Unit tests | `make test-unit` (= `composer ci:test:php:unit`) |
+| Functional tests | `make test-functional` (= `composer ci:test:php:functional`) |
+| All tests | `make test` |
+| Rector (dry-run) | `composer ci:test:php:rector` |
 
 ## Architecture Quick Reference
+
+Full component map: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ```
 Classes/
