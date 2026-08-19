@@ -1,16 +1,16 @@
-<!-- Managed by agent: keep sections & order; edit content, not structure. Last updated: 2025-12-09 -->
+<!-- Managed by agent: keep sections & order; edit content, not structure. Last updated: 2026-08-19 -->
 
 # AGENTS.md (Tests/)
 
 Testing infrastructure for the Extension Scanner CLI.
 
-## 1. Overview
+## Overview
 
 This directory contains all tests for the extension:
 - **Unit/** — Fast, isolated unit tests (no TYPO3 bootstrap)
-- **Functional/** — Integration tests requiring TYPO3 environment
+- **Functional/** — Integration tests requiring TYPO3 environment (currently empty except `.gitkeep`)
 
-## 2. Setup & Environment
+## Setup & Environment
 
 ```bash
 # Install dev dependencies
@@ -20,31 +20,30 @@ ddev composer install
 ddev exec .Build/bin/phpunit --version
 ```
 
-**Framework:** PHPUnit 10.5+ with TYPO3 Testing Framework 8.x
+**Framework:** PHPUnit (schema 10.5 in `phpunit.xml`) via TYPO3 Testing Framework `^8.0 || ^9.0` (see `composer.json`). Test suites are named `Unit Tests` and `Functional Tests`.
 
-## 3. Build & Tests
+## Build & Tests
 
 ```bash
-# Run all tests
-ddev exec .Build/bin/phpunit -c phpunit.xml
-
 # Run unit tests only
-ddev exec .Build/bin/phpunit -c phpunit.xml --testsuite=Unit
+composer ci:test:php:unit
 
 # Run functional tests only
-ddev exec .Build/bin/phpunit -c phpunit.xml --testsuite=Functional
+composer ci:test:php:functional
 
 # Run with coverage (PCOV)
-ddev exec .Build/bin/phpunit -c phpunit.xml --coverage-text
+.Build/bin/phpunit -c phpunit.xml --testsuite "Unit Tests" --coverage-text
 
 # Run specific test class
-ddev exec .Build/bin/phpunit -c phpunit.xml Tests/Unit/Dto/ScanMatchTest.php
+.Build/bin/phpunit -c phpunit.xml Tests/Unit/Dto/ScanMatchTest.php
 
 # Run specific test method
-ddev exec .Build/bin/phpunit -c phpunit.xml --filter testIsStrongReturnsTrueForStrongIndicator
+.Build/bin/phpunit -c phpunit.xml --filter isStrongReturnsTrueForStrongIndicator
 ```
 
-## 4. Code Style & Conventions
+Inside DDEV, prefix commands with `ddev exec`.
+
+## Code Style & Conventions
 
 ### PHPUnit 10+ Attributes
 
@@ -96,25 +95,25 @@ self::assertCount(2, $matches);
 $this->assertEquals('expected', $actual);
 ```
 
-## 5. Security & Safety
+## Security & Safety
 
 - **Never use real extension paths** in tests
 - **Use temporary directories** for filesystem tests
 - **Clean up** any created files in `tearDown()`
 - **Mock external dependencies** (PackageManager, etc.)
 
-## 6. PR/Commit Checklist
+## PR/Commit Checklist
 
 Before committing changes to Tests/:
 
-- [ ] All tests pass: `ddev exec .Build/bin/phpunit`
+- [ ] All tests pass: `composer ci:test:php:unit`
 - [ ] New classes have corresponding test files
 - [ ] Test files use `#[CoversClass()]` attribute
 - [ ] Test methods use `#[Test]` attribute
 - [ ] Assertions use `self::assert*()` syntax
 - [ ] No `@group skip` or disabled tests without issue reference
 
-## 7. Good vs Bad Examples
+## Good vs Bad Examples
 
 ### Unit Test Structure
 
@@ -188,14 +187,14 @@ public function fromMatcherOutputFiltersInvalidRestFiles(): void
 }
 ```
 
-## 8. When Stuck
+## When Stuck
 
 - **TYPO3 Testing Framework:** https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/Testing/
 - **PHPUnit 10 Docs:** https://docs.phpunit.de/en/10.5/
-- **Functional Test Setup:** See `Tests/Functional/.gitkeep` for bootstrap hints
+- **Functional Test Setup:** `Tests/Functional/` is empty so far; bootstrap comes from `typo3/testing-framework` (see `bootstrap` in `phpunit.xml`)
 - **Mock Objects:** Use PHPUnit's `createMock()` or `createStub()`
 
-## 9. House Rules (Scope-Specific)
+## House Rules (Scope-Specific)
 
 - **Coverage Target:** Aim for 80%+ line coverage on Classes/
 - **No Slow Tests:** Unit tests should run < 100ms each
