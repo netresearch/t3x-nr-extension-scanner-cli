@@ -18,7 +18,7 @@ PHPSTAN_EXIT=$?
 
 echo ""
 echo "3/3: Running tests..."
-.Build/bin/phpunit -c phpunit.xml
+.Build/bin/phpunit -c Build/phpunit.xml
 TEST_EXIT=$?
 
 echo ""

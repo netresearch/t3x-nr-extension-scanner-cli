@@ -85,7 +85,7 @@
         "ci:test:php:cgl": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff",
         "ci:test:php:rector": "rector process --config Build/rector.php --dry-run",
         "ci:test:php:phpstan": "phpstan analyse -c Build/phpstan/phpstan.neon --error-format=github",
-        "ci:test:php:unit": "phpunit -c phpunit.xml --testsuite \"Unit Tests\"",
-        "ci:test:php:functional": "phpunit -c phpunit.xml --testsuite \"Functional Tests\""
+        "ci:test:php:unit": "sh -c 'if [ -f /.dockerenv ] || [ -n \"${CI:-}\" ]; then phpunit -c Build/phpunit.xml --testsuite unit \"$@\"; else ./Build/Scripts/runTests.sh -s unit \"$@\"; fi' --",
+        "ci:test:php:functional": "sh -c 'if [ -f /.dockerenv ] || [ -n \"${CI:-}\" ]; then phpunit -c Build/phpunit.xml --testsuite functional \"$@\"; else ./Build/Scripts/runTests.sh -s functional \"$@\"; fi' --"
     }
 }

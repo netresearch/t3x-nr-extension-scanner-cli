@@ -7,8 +7,8 @@
 
 if [ "$DDEV_FLAGS_COVERAGE" = "true" ]; then
     echo "Running tests with coverage..."
-    .Build/bin/phpunit -c phpunit.xml --coverage-text --coverage-html .Build/logs/html-coverage
+    .Build/bin/phpunit -c Build/phpunit.xml --coverage-text --coverage-html .Build/logs/html-coverage
 else
     echo "Running tests..."
-    .Build/bin/phpunit -c phpunit.xml
+    .Build/bin/phpunit -c Build/phpunit.xml
 fi

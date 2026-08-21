@@ -20,7 +20,7 @@ ddev composer install
 ddev exec .Build/bin/phpunit --version
 ```
 
-**Framework:** PHPUnit (schema 10.5 in `phpunit.xml`) via TYPO3 Testing Framework `^8.0 || ^9.0` (see `composer.json`). Test suites are named `Unit Tests` and `Functional Tests`.
+**Framework:** PHPUnit (schema 10.5 in `Build/phpunit.xml`) via TYPO3 Testing Framework `^8.0 || ^9.0` (see `composer.json`). Test suites are named `Unit Tests` and `Functional Tests`.
 
 ## Build & Tests
 
@@ -32,13 +32,13 @@ composer ci:test:php:unit
 composer ci:test:php:functional
 
 # Run with coverage (PCOV)
-.Build/bin/phpunit -c phpunit.xml --testsuite "Unit Tests" --coverage-text
+.Build/bin/phpunit -c Build/phpunit.xml --testsuite "Unit Tests" --coverage-text
 
 # Run specific test class
-.Build/bin/phpunit -c phpunit.xml Tests/Unit/Dto/ScanMatchTest.php
+.Build/bin/phpunit -c Build/phpunit.xml Tests/Unit/Dto/ScanMatchTest.php
 
 # Run specific test method
-.Build/bin/phpunit -c phpunit.xml --filter isStrongReturnsTrueForStrongIndicator
+.Build/bin/phpunit -c Build/phpunit.xml --filter isStrongReturnsTrueForStrongIndicator
 ```
 
 Inside DDEV, prefix commands with `ddev exec`.
@@ -191,7 +191,7 @@ public function fromMatcherOutputFiltersInvalidRestFiles(): void
 
 - **TYPO3 Testing Framework:** https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/Testing/
 - **PHPUnit 10 Docs:** https://docs.phpunit.de/en/10.5/
-- **Functional Test Setup:** `Tests/Functional/` is empty so far; bootstrap comes from `typo3/testing-framework` (see `bootstrap` in `phpunit.xml`)
+- **Functional Test Setup:** `Tests/Functional/` is empty so far; bootstrap comes from `typo3/testing-framework` (see `bootstrap` in `Build/phpunit.xml`)
 - **Mock Objects:** Use PHPUnit's `createMock()` or `createStub()`
 
 ## House Rules (Scope-Specific)
