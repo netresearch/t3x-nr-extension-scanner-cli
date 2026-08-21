@@ -34,7 +34,7 @@ ddev exec php -v
 make test
 
 # Run specific test file
-.Build/bin/phpunit -c phpunit.xml Tests/Unit/Dto/ScanMatchTest.php
+.Build/bin/phpunit -c Build/phpunit.xml Tests/Unit/Dto/ScanMatchTest.php
 
 # Static analysis (config: Build/phpstan/phpstan.neon)
 composer ci:test:php:phpstan

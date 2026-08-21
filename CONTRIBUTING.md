@@ -70,10 +70,10 @@ ddev composer install
 
 ```bash
 # Unit tests
-ddev exec .Build/bin/phpunit -c phpunit.xml
+ddev exec .Build/bin/phpunit -c Build/phpunit.xml
 
 # Or without DDEV
-.Build/bin/phpunit -c phpunit.xml
+.Build/bin/phpunit -c Build/phpunit.xml
 ```
 
 ### Code Quality Tools
