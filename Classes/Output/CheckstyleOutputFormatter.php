@@ -47,9 +47,7 @@ class CheckstyleOutputFormatter implements OutputFormatterInterface
         foreach ($allMatches as $matches) {
             foreach ($matches as $match) {
                 $absolutePath = $match->absolutePath;
-                if (!isset($matchesByFile[$absolutePath])) {
-                    $matchesByFile[$absolutePath] = [];
-                }
+                $matchesByFile[$absolutePath] ??= [];
 
                 $matchesByFile[$absolutePath][] = $match;
             }
