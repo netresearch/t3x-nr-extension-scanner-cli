@@ -9,11 +9,14 @@ declare(strict_types=1);
 
 namespace Netresearch\ExtensionScannerCli\Tests\Unit\Service;
 
+use FilesystemIterator;
 use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
 use Netresearch\ExtensionScannerCli\Service\ExtensionScannerService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use Symfony\Component\Finder\SplFileInfo;
 
 #[CoversClass(ExtensionScannerService::class)]
@@ -32,8 +35,13 @@ final class ExtensionScannerServiceTest extends TestCase
     protected function tearDown(): void
     {
         if ($this->temporaryDirectory !== null) {
-            foreach (glob($this->temporaryDirectory . '/*') ?: [] as $file) {
-                unlink($file);
+            $entries = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($this->temporaryDirectory, FilesystemIterator::SKIP_DOTS),
+                RecursiveIteratorIterator::CHILD_FIRST,
+            );
+            /** @var \SplFileInfo $entry */
+            foreach ($entries as $entry) {
+                $entry->isDir() ? rmdir($entry->getPathname()) : unlink($entry->getPathname());
             }
 
             rmdir($this->temporaryDirectory);
@@ -77,6 +85,40 @@ final class ExtensionScannerServiceTest extends TestCase
 
         self::assertSame([], $matches);
         self::assertSame(['Broken.php'], $reported);
+    }
+
+    #[Test]
+    public function scanPathSkipsDependencyDirectoriesButNotFilesWhoseNameContainsTheirName(): void
+    {
+        $directory = $this->createTemporaryDirectory();
+        $scannedFiles = [
+            'vendor/Package/Dependency.php',
+            'Classes/node_modules/Module.php',
+            'Classes/vendorApi.php',
+            'Classes/vendorish/Helper.php',
+        ];
+        foreach ($scannedFiles as $scannedFile) {
+            $this->writeScannedFile($scannedFile, '<?php function (' . "\n");
+        }
+
+        $subject = new class extends ExtensionScannerService {
+            public function getMatcherConfigurations(): array
+            {
+                return [];
+            }
+        };
+        $reported = [];
+
+        $subject->scanPath(
+            $directory,
+            null,
+            static function (string $fileName, string $error) use (&$reported): void {
+                $reported[] = $fileName;
+            },
+        );
+        sort($reported);
+
+        self::assertSame(['Classes/vendorApi.php', 'Classes/vendorish/Helper.php'], $reported);
     }
 
     #[Test]
@@ -142,8 +184,13 @@ final class ExtensionScannerServiceTest extends TestCase
     {
         self::assertNotNull($this->temporaryDirectory);
         $path = $this->temporaryDirectory . '/' . $relativePathname;
-        file_put_contents($path, $content);
+        if (!is_dir(\dirname($path))) {
+            mkdir(\dirname($path), 0o777, true);
+        }
 
-        return new SplFileInfo($path, '', $relativePathname);
+        file_put_contents($path, $content);
+        $relativePath = \dirname($relativePathname);
+
+        return new SplFileInfo($path, $relativePath === '.' ? '' : $relativePath, $relativePathname);
     }
 }

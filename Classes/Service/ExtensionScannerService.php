@@ -117,9 +117,9 @@ class ExtensionScannerService
         $finder->files()
             ->in($path)
             ->name('*.php')
-            ->notPath('vendor')
-            ->notPath('node_modules')
-            ->notPath('.Build');
+            // Directory names at any depth. notPath('vendor') would match the
+            // substring anywhere in the path and also skip Classes/vendorApi.php.
+            ->exclude(['vendor', 'node_modules', '.Build']);
 
         $files = iterator_to_array($finder);
         $fileCount = \count($files);
