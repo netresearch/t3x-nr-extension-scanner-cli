@@ -196,6 +196,10 @@ This extension reuses the existing Extension Scanner infrastructure from `EXT:in
 2. Breaking changes would be apparent immediately
 3. The benefit outweighs the API stability concern
 
+## Security
+
+The extension parses the scanned PHP files and never executes them. What it reads and writes, its trust boundaries and its limits are described in [docs/SECURITY-ASSURANCE.md](docs/SECURITY-ASSURANCE.md); vulnerabilities are reported as described in [SECURITY.md](SECURITY.md).
+
 ## Requirements
 
 - TYPO3 12.4 LTS, 13.4 LTS, or 14.x

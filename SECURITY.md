@@ -55,6 +55,8 @@ This extension:
 - Does not make network requests
 - Does not store sensitive data
 
+The threat model, the trust boundaries and what users can and cannot expect are in [docs/SECURITY-ASSURANCE.md](docs/SECURITY-ASSURANCE.md).
+
 ## Contact
 
 - Security issues: [GitHub Security Advisories](https://github.com/netresearch/t3x-nr-extension-scanner-cli/security/advisories/new)
