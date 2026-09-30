@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: Netresearch DTT GmbH
+
+# Exclude development files from `git archive`, which builds the GitHub
+# release assets and the Composer dist archives.
+/.bestpractices.json    export-ignore
+/.ddev                  export-ignore
+/.gitattributes         export-ignore
+/.github                export-ignore
+/.gitignore             export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/Build                  export-ignore
+/Makefile               export-ignore
+/Tests                  export-ignore
+/docs                   export-ignore
+/renovate.json          export-ignore
+AGENTS.md               export-ignore
+CLAUDE.md               export-ignore
