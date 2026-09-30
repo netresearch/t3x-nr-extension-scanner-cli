@@ -14,16 +14,69 @@ use Netresearch\ExtensionScannerCli\Service\ExtensionScannerService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Finder\SplFileInfo;
 
 #[CoversClass(ExtensionScannerService::class)]
 final class ExtensionScannerServiceTest extends TestCase
 {
     private ExtensionScannerService $subject;
 
+    private ?string $temporaryDirectory = null;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->subject = new ExtensionScannerService();
+    }
+
+    protected function tearDown(): void
+    {
+        if ($this->temporaryDirectory !== null) {
+            foreach (glob($this->temporaryDirectory . '/*') ?: [] as $file) {
+                unlink($file);
+            }
+
+            rmdir($this->temporaryDirectory);
+            $this->temporaryDirectory = null;
+        }
+
+        parent::tearDown();
+    }
+
+    #[Test]
+    public function scanFileParsesTheScannedCodeWithoutExecutingIt(): void
+    {
+        $directory = $this->createTemporaryDirectory();
+        $marker = $directory . '/executed.marker';
+        $file = $this->writeScannedFile(
+            'SideEffect.php',
+            '<?php' . "\n" . 'file_put_contents(' . var_export($marker, true) . ', "executed");' . "\n",
+        );
+
+        $matches = $this->subject->scanFile($file, null, []);
+
+        self::assertSame([], $matches);
+        self::assertFileDoesNotExist($marker);
+    }
+
+    #[Test]
+    public function scanFileReportsAParseErrorAndReturnsNoMatches(): void
+    {
+        $this->createTemporaryDirectory();
+        $file = $this->writeScannedFile('Broken.php', '<?php function (' . "\n");
+        $reported = [];
+
+        $matches = $this->subject->scanFile(
+            $file,
+            null,
+            [],
+            static function (string $fileName, string $error) use (&$reported): void {
+                $reported[] = $fileName;
+            },
+        );
+
+        self::assertSame([], $matches);
+        self::assertSame(['Broken.php'], $reported);
     }
 
     #[Test]
@@ -74,5 +127,23 @@ final class ExtensionScannerServiceTest extends TestCase
 
         self::assertIsArray($result);
         self::assertNotEmpty($result);
+    }
+
+    private function createTemporaryDirectory(): string
+    {
+        $directory = sys_get_temp_dir() . '/nr-extension-scanner-cli-' . bin2hex(random_bytes(8));
+        mkdir($directory);
+        $this->temporaryDirectory = $directory;
+
+        return $directory;
+    }
+
+    private function writeScannedFile(string $relativePathname, string $content): SplFileInfo
+    {
+        self::assertNotNull($this->temporaryDirectory);
+        $path = $this->temporaryDirectory . '/' . $relativePathname;
+        file_put_contents($path, $content);
+
+        return new SplFileInfo($path, '', $relativePathname);
     }
 }
