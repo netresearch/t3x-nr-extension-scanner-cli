@@ -82,13 +82,13 @@ ddev exec .Build/bin/phpunit -c Build/phpunit.xml
 
 ```bash
 # PHP CS Fixer
-ddev exec .Build/bin/php-cs-fixer fix --config=Build/php-cs-fixer/.php-cs-fixer.php --dry-run --diff
+ddev exec .Build/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff
 
 # PHPStan
 ddev exec .Build/bin/phpstan analyse -c Build/phpstan/phpstan.neon
 
 # Fix coding standards
-ddev exec .Build/bin/php-cs-fixer fix --config=Build/php-cs-fixer/.php-cs-fixer.php
+ddev exec .Build/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php
 ```
 
 ## Coding Standards
@@ -102,6 +102,8 @@ ddev exec .Build/bin/php-cs-fixer fix --config=Build/php-cs-fixer/.php-cs-fixer.
 
 ### Commit Messages
 
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/): `type(scope): subject`.
+
 - Use present tense ("Add feature" not "Added feature")
 - Use imperative mood ("Fix bug" not "Fixes bug")
 - Reference issues when applicable (`Fixes #123`)
@@ -109,7 +111,7 @@ ddev exec .Build/bin/php-cs-fixer fix --config=Build/php-cs-fixer/.php-cs-fixer.
 
 Example:
 ```
-[FEATURE] Add support for custom matcher configurations
+feat(scanner): support custom matcher configurations
 
 This adds the ability to configure additional matchers beyond
 the default TYPO3 core matchers.
@@ -117,14 +119,14 @@ the default TYPO3 core matchers.
 Resolves: #42
 ```
 
-### TYPO3 Commit Prefixes
+### Commit Types
 
-- `[FEATURE]` - New functionality
-- `[BUGFIX]` - Bug fixes
-- `[TASK]` - Maintenance, refactoring
-- `[DOCS]` - Documentation changes
-- `[CLEANUP]` - Code cleanup
-- `[TEST]` - Test-related changes
+- `feat` - New functionality
+- `fix` - Bug fixes
+- `chore`, `ci`, `build` - Maintenance, CI and build changes
+- `refactor` - Code changes that neither fix a bug nor add a feature
+- `docs` - Documentation changes
+- `test` - Test-related changes
 
 ## Project Structure
 
@@ -132,6 +134,7 @@ Resolves: #42
 extension_scanner_cli/
 ├── Classes/
 │   ├── Command/           # Symfony console commands
+│   ├── Dto/               # Immutable scan result objects
 │   ├── Output/            # Output formatters
 │   └── Service/           # Business logic
 ├── Configuration/
@@ -153,20 +156,19 @@ extension_scanner_cli/
 
 Example:
 ```php
-/**
- * @test
- */
+#[Test]
 public function formatOutputsValidJsonStructure(): void
 {
     // Arrange
     $formatter = new JsonOutputFormatter();
+    $output = new BufferedOutput();
     $matches = [...];
 
     // Act
-    $result = $formatter->format($output, $matches, 1, 2);
+    $formatter->format($output, $matches, 1, 2);
 
     // Assert
-    $this->assertJson($result);
+    self::assertJson($output->fetch());
 }
 ```
 

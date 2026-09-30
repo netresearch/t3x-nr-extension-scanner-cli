@@ -22,7 +22,7 @@ ddev composer install
 ddev exec .Build/bin/phpunit --version
 ```
 
-**Framework:** PHPUnit (schema 10.5 in `Build/phpunit.xml`) via TYPO3 Testing Framework `^8.0 || ^9.0` (see `composer.json`). Test suites are named `Unit Tests` and `Functional Tests`.
+**Framework:** PHPUnit (schema 10.5 in `Build/phpunit.xml`) via TYPO3 Testing Framework `^8.0 || ^9.0` (see `composer.json`). Test suites are named `unit` and `functional`.
 
 ## Build & Tests
 
@@ -34,7 +34,7 @@ composer ci:test:php:unit
 composer ci:test:php:functional
 
 # Run with coverage (PCOV)
-.Build/bin/phpunit -c Build/phpunit.xml --testsuite "Unit Tests" --coverage-text
+.Build/bin/phpunit -c Build/phpunit.xml --testsuite unit --coverage-text
 
 # Run specific test class
 .Build/bin/phpunit -c Build/phpunit.xml Tests/Unit/Dto/ScanMatchTest.php
