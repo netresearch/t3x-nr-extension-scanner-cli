@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
 # Execution Plans
 
 Working directory for multi-step agent execution plans (design docs, migration plans, task breakdowns) that are too large for a PR description.

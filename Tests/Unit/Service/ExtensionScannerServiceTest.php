@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+/*
+ * SPDX-License-Identifier: MIT
+ * SPDX-FileCopyrightText: Netresearch DTT GmbH
+ */
+
 namespace Netresearch\ExtensionScannerCli\Tests\Unit\Service;
 
 use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
@@ -9,16 +14,103 @@ use Netresearch\ExtensionScannerCli\Service\ExtensionScannerService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Finder\SplFileInfo;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 #[CoversClass(ExtensionScannerService::class)]
 final class ExtensionScannerServiceTest extends TestCase
 {
     private ExtensionScannerService $subject;
 
+    private ?string $temporaryDirectory = null;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->subject = new ExtensionScannerService();
+    }
+
+    protected function tearDown(): void
+    {
+        if ($this->temporaryDirectory !== null) {
+            GeneralUtility::rmdir($this->temporaryDirectory, true);
+            $this->temporaryDirectory = null;
+        }
+
+        parent::tearDown();
+    }
+
+    #[Test]
+    public function scanFileParsesTheScannedCodeWithoutExecutingIt(): void
+    {
+        $directory = $this->createTemporaryDirectory();
+        $marker = $directory . '/executed.marker';
+        $file = $this->writeScannedFile(
+            'SideEffect.php',
+            '<?php' . "\n" . 'file_put_contents(' . var_export($marker, true) . ', "executed");' . "\n",
+        );
+
+        $matches = $this->subject->scanFile($file, null, []);
+
+        self::assertSame([], $matches);
+        self::assertFileDoesNotExist($marker);
+    }
+
+    #[Test]
+    public function scanFileReportsAParseErrorAndReturnsNoMatches(): void
+    {
+        $this->createTemporaryDirectory();
+        $file = $this->writeScannedFile('Broken.php', '<?php function (' . "\n");
+        $reported = [];
+
+        $matches = $this->subject->scanFile(
+            $file,
+            null,
+            [],
+            static function (string $fileName, string $error) use (&$reported): void {
+                $reported[$fileName] = $error;
+            },
+        );
+
+        self::assertSame([], $matches);
+        self::assertSame(['Broken.php'], array_keys($reported));
+        self::assertNotSame('', $reported['Broken.php']);
+    }
+
+    #[Test]
+    public function scanPathSkipsDependencyDirectoriesButNotFilesWhoseNameContainsTheirName(): void
+    {
+        $directory = $this->createTemporaryDirectory();
+        $scannedFiles = [
+            'vendor/Package/Dependency.php',
+            'Classes/node_modules/Module.php',
+            'Classes/vendorApi.php',
+            'Classes/vendorish/Helper.php',
+        ];
+        foreach ($scannedFiles as $scannedFile) {
+            $this->writeScannedFile($scannedFile, '<?php function (' . "\n");
+        }
+
+        $subject = new class extends ExtensionScannerService {
+            public function getMatcherConfigurations(): array
+            {
+                return [];
+            }
+        };
+        $reported = [];
+
+        $subject->scanPath(
+            $directory,
+            null,
+            static function (string $fileName, string $error) use (&$reported): void {
+                $reported[$fileName] = $error;
+            },
+        );
+        $reportedFiles = array_keys($reported);
+        sort($reportedFiles);
+
+        self::assertSame(['Classes/vendorApi.php', 'Classes/vendorish/Helper.php'], $reportedFiles);
+        self::assertNotContains('', $reported);
     }
 
     #[Test]
@@ -69,5 +161,28 @@ final class ExtensionScannerServiceTest extends TestCase
 
         self::assertIsArray($result);
         self::assertNotEmpty($result);
+    }
+
+    private function createTemporaryDirectory(): string
+    {
+        $directory = sys_get_temp_dir() . '/nr-extension-scanner-cli-' . bin2hex(random_bytes(8));
+        mkdir($directory);
+        $this->temporaryDirectory = $directory;
+
+        return $directory;
+    }
+
+    private function writeScannedFile(string $relativePathname, string $content): SplFileInfo
+    {
+        self::assertNotNull($this->temporaryDirectory);
+        $path = $this->temporaryDirectory . '/' . $relativePathname;
+        if (!is_dir(\dirname($path))) {
+            mkdir(\dirname($path), 0o777, true);
+        }
+
+        file_put_contents($path, $content);
+        $relativePath = \dirname($relativePathname);
+
+        return new SplFileInfo($path, $relativePath === '.' ? '' : $relativePath, $relativePathname);
     }
 }

@@ -9,6 +9,9 @@ declare(strict_types=1);
  * LICENSE file that was distributed with this source code.
  *
  * (c) Netresearch DTT GmbH
+ *
+ * SPDX-License-Identifier: MIT
+ * SPDX-FileCopyrightText: Netresearch DTT GmbH
  */
 
 namespace Netresearch\ExtensionScannerCli\Service;
@@ -114,9 +117,9 @@ class ExtensionScannerService
         $finder->files()
             ->in($path)
             ->name('*.php')
-            ->notPath('vendor')
-            ->notPath('node_modules')
-            ->notPath('.Build');
+            // Directory names at any depth. notPath('vendor') would match the
+            // substring anywhere in the path and also skip Classes/vendorApi.php.
+            ->exclude(['vendor', 'node_modules', '.Build']);
 
         $files = iterator_to_array($finder);
         $fileCount = \count($files);

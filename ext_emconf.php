@@ -1,5 +1,10 @@
 <?php
 
+/*
+ * SPDX-License-Identifier: MIT
+ * SPDX-FileCopyrightText: Netresearch DTT GmbH
+ */
+
 $EM_CONF[$_EXTKEY] = [
     'title' => 'NR Extension Scanner CLI',
     'description' => 'CLI command to scan TYPO3 extensions for deprecated/removed API usage - by Netresearch',

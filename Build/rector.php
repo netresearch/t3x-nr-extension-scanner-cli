@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+/*
+ * SPDX-License-Identifier: MIT
+ * SPDX-FileCopyrightText: Netresearch DTT GmbH
+ */
+
 use Rector\Config\RectorConfig;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
 

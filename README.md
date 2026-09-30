@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
 # TYPO3 Extension Scanner CLI
 
 [![TYPO3 12](https://img.shields.io/badge/TYPO3-12-orange.svg)](https://get.typo3.org/version/12)
@@ -193,6 +195,10 @@ This extension reuses the existing Extension Scanner infrastructure from `EXT:in
 1. It's not production runtime code
 2. Breaking changes would be apparent immediately
 3. The benefit outweighs the API stability concern
+
+## Security
+
+The extension parses the scanned PHP files and never executes them. What it reads and writes, its trust boundaries and its limits are described in [docs/SECURITY-ASSURANCE.md](https://github.com/netresearch/t3x-nr-extension-scanner-cli/blob/main/docs/SECURITY-ASSURANCE.md); vulnerabilities are reported as described in [SECURITY.md](SECURITY.md).
 
 ## Requirements
 

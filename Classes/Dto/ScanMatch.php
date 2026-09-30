@@ -9,6 +9,9 @@ declare(strict_types=1);
  * LICENSE file that was distributed with this source code.
  *
  * (c) Netresearch DTT GmbH
+ *
+ * SPDX-License-Identifier: MIT
+ * SPDX-FileCopyrightText: Netresearch DTT GmbH
  */
 
 namespace Netresearch\ExtensionScannerCli\Dto;

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
 # Security Policy
 
 ## Supported Versions
@@ -13,7 +15,7 @@ We take security vulnerabilities seriously. If you discover a security issue, pl
 ### How to Report
 
 1. **Do NOT** open a public GitHub issue for security vulnerabilities
-2. Send an email to **[GitHub Security Advisories](https://github.com/netresearch/t3x-nr-extension-scanner-cli/security/advisories/new)** with:
+2. Open a private report through **[GitHub Security Advisories](https://github.com/netresearch/t3x-nr-extension-scanner-cli/security/advisories/new)** with:
    - Description of the vulnerability
    - Steps to reproduce
    - Potential impact
@@ -52,6 +54,8 @@ This extension:
 - Uses TYPO3 core's Extension Scanner matchers
 - Does not make network requests
 - Does not store sensitive data
+
+The threat model, the trust boundaries and what users can and cannot expect are in [docs/SECURITY-ASSURANCE.md](https://github.com/netresearch/t3x-nr-extension-scanner-cli/blob/main/docs/SECURITY-ASSURANCE.md).
 
 ## Contact
 

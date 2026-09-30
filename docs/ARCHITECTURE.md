@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
 # Architecture
 
 Agent-facing component map. For coding conventions see [`../Classes/AGENTS.md`](../Classes/AGENTS.md); for user documentation see [`../Documentation/`](../Documentation/).
