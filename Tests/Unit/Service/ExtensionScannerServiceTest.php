@@ -68,12 +68,13 @@ final class ExtensionScannerServiceTest extends TestCase
             null,
             [],
             static function (string $fileName, string $error) use (&$reported): void {
-                $reported[] = $fileName;
+                $reported[$fileName] = $error;
             },
         );
 
         self::assertSame([], $matches);
-        self::assertSame(['Broken.php'], $reported);
+        self::assertSame(['Broken.php'], array_keys($reported));
+        self::assertNotSame('', $reported['Broken.php']);
     }
 
     #[Test]
@@ -102,12 +103,14 @@ final class ExtensionScannerServiceTest extends TestCase
             $directory,
             null,
             static function (string $fileName, string $error) use (&$reported): void {
-                $reported[] = $fileName;
+                $reported[$fileName] = $error;
             },
         );
-        sort($reported);
+        $reportedFiles = array_keys($reported);
+        sort($reportedFiles);
 
-        self::assertSame(['Classes/vendorApi.php', 'Classes/vendorish/Helper.php'], $reported);
+        self::assertSame(['Classes/vendorApi.php', 'Classes/vendorish/Helper.php'], $reportedFiles);
+        self::assertNotContains('', $reported);
     }
 
     #[Test]
