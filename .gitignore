@@ -14,7 +14,7 @@ Thumbs.db
 
 # TYPO3
 var/
-public/typo3temp/
+public/
 
 # Testing
 .phpunit.result.cache
