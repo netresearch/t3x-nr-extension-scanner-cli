@@ -185,6 +185,24 @@ Releases are managed by maintainers following semantic versioning:
 - **MINOR**: New features (backward compatible)
 - **PATCH**: Bug fixes (backward compatible)
 
+## Governance and policies
+
+This extension follows the organisation-wide Netresearch policies:
+
+- [Governance](https://github.com/netresearch/.github/blob/main/GOVERNANCE.md): ownership, roles and their responsibilities, how decisions are made and how disagreements are resolved.
+- [Roadmap](https://github.com/netresearch/.github/blob/main/ROADMAP.md): planned and excluded work for the next twelve months. It applies here because this repository has no `ROADMAP.md` of its own.
+- [Handling of dependency and code analysis findings](https://github.com/netresearch/.github/blob/main/SECURITY.md#handling-of-dependency-and-code-analysis-findings): which vulnerability, licence and static-analysis findings must be fixed, by when, and how exceptions are recorded.
+- [Secret management](https://github.com/netresearch/.github/blob/main/SECURITY.md#secret-management): where CI and release credentials are stored, who may use them, and when they are rotated.
+- [Access roster](https://github.com/netresearch/.github/blob/main/docs/access-roster.md): the accounts with admin or write access to this repository.
+
+Checks that run on every pull request in this repository:
+
+- `.github/workflows/checks.yml`: Composer Audit (fails on any advisory for an installed package that `config.audit.ignore` in `composer.json` does not exempt) and Opengrep SAST (fails on findings of severity WARNING or higher), both through `security.yml` of `netresearch/typo3-ci-workflows`; Dependency Review (fails on added or changed dependencies with a vulnerability of severity high or higher); the PHP licence check (`license-check.yml`, fails on an SSPL or BSL licensed Composer dependency); Betterleaks secret scanning; zizmor and CodeQL for the workflow files (the repository has no JavaScript, and CodeQL has no PHP analyser). The `fuzz` job is called but runs nothing here, as `Build/phpunit.xml` defines no fuzz test suite.
+- `.github/workflows/ci.yml`: PHP lint, code style (PHP-CS-Fixer), PHPStan at level 10, Rector in dry-run mode, the unit tests for PHP 8.2 to 8.5 and TYPO3 12.4, 13.4 and 14.3, and a render of `Documentation/`. Functional tests are switched off; `Tests/Functional/` holds no tests yet.
+- `.github/workflows/harness-verify.yml`: `Build/Scripts/verify-harness.sh` checks that the `AGENTS.md` files and `docs/` match the repository.
+
+Exceptions: `config.audit.ignore` in `composer.json` exempts eight Packagist advisories from Composer Audit; the file records no reason for them.
+
 ## Questions?
 
 - Open an issue for questions
