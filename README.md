@@ -198,7 +198,7 @@ This extension reuses the existing Extension Scanner infrastructure from `EXT:in
 
 ## Security
 
-The extension parses the scanned PHP files and never executes them. What it reads and writes, its trust boundaries and its limits are described in [docs/SECURITY-ASSURANCE.md](docs/SECURITY-ASSURANCE.md); vulnerabilities are reported as described in [SECURITY.md](SECURITY.md).
+The extension parses the scanned PHP files and never executes them. What it reads and writes, its trust boundaries and its limits are described in [docs/SECURITY-ASSURANCE.md](https://github.com/netresearch/t3x-nr-extension-scanner-cli/blob/main/docs/SECURITY-ASSURANCE.md); vulnerabilities are reported as described in [SECURITY.md](SECURITY.md).
 
 ## Requirements
 
