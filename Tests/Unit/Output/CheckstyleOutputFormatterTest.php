@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+/*
+ * SPDX-License-Identifier: MIT
+ * SPDX-FileCopyrightText: Netresearch DTT GmbH
+ */
+
 namespace Netresearch\ExtensionScannerCli\Tests\Unit\Output;
 
 use Netresearch\ExtensionScannerCli\Dto\ScanMatch;

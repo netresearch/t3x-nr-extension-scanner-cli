@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: Netresearch DTT GmbH
 
 ## Description: Run all quality checks (lint, phpstan, tests)
 ## Usage: quality

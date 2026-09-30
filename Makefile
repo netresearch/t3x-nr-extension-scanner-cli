@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: Netresearch DTT GmbH
+
 .PHONY: help cgl cgl-fix phpstan test test-unit test-functional
 
 help: ## Show this help

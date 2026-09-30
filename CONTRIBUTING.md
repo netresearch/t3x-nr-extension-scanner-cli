@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
 # Contributing to Extension Scanner CLI
 
 Thank you for your interest in contributing to this TYPO3 extension! This document provides guidelines and information for contributors.
