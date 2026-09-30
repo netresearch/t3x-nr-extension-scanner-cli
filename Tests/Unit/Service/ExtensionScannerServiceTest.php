@@ -9,15 +9,13 @@ declare(strict_types=1);
 
 namespace Netresearch\ExtensionScannerCli\Tests\Unit\Service;
 
-use FilesystemIterator;
 use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
 use Netresearch\ExtensionScannerCli\Service\ExtensionScannerService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use Symfony\Component\Finder\SplFileInfo;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 #[CoversClass(ExtensionScannerService::class)]
 final class ExtensionScannerServiceTest extends TestCase
@@ -35,16 +33,7 @@ final class ExtensionScannerServiceTest extends TestCase
     protected function tearDown(): void
     {
         if ($this->temporaryDirectory !== null) {
-            $entries = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator($this->temporaryDirectory, FilesystemIterator::SKIP_DOTS),
-                RecursiveIteratorIterator::CHILD_FIRST,
-            );
-            /** @var \SplFileInfo $entry */
-            foreach ($entries as $entry) {
-                $entry->isDir() ? rmdir($entry->getPathname()) : unlink($entry->getPathname());
-            }
-
-            rmdir($this->temporaryDirectory);
+            GeneralUtility::rmdir($this->temporaryDirectory, true);
             $this->temporaryDirectory = null;
         }
 
