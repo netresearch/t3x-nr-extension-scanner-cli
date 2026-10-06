@@ -1,7 +1,7 @@
 {
     "name": "netresearch/extension-scanner-cli",
     "type": "typo3-cms-extension",
-    "description": "CLI command to scan TYPO3 extensions for deprecated/removed API usage - by Netresearch",
+    "description": "NR Extension Scanner CLI - CLI command to scan TYPO3 extensions for deprecated/removed API usage - by Netresearch",
     "license": "MIT",
     "keywords": [
         "TYPO3",
