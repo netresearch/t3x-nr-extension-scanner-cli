@@ -12,10 +12,12 @@ namespace Netresearch\ExtensionScannerCli\Tests\Unit\Service;
 use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
 use Netresearch\ExtensionScannerCli\Service\ExtensionScannerService;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\SplFileInfo;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Install\ExtensionScanner\Php\Matcher\ClassConstantMatcher;
 
 #[CoversClass(ExtensionScannerService::class)]
 final class ExtensionScannerServiceTest extends TestCase
@@ -75,6 +77,128 @@ final class ExtensionScannerServiceTest extends TestCase
         self::assertSame([], $matches);
         self::assertSame(['Broken.php'], array_keys($reported));
         self::assertNotSame('', $reported['Broken.php']);
+    }
+
+    #[Test]
+    public function scanFileReportsANameResolutionErrorAndReturnsNoMatches(): void
+    {
+        $this->createTemporaryDirectory();
+        $file = $this->writeScannedFile('DuplicateAlias.php', "<?php\nuse A\\B as X;\nuse C\\D as X;\n");
+        $reported = [];
+
+        $matches = $this->subject->scanFile(
+            $file,
+            null,
+            [],
+            static function (string $fileName, string $error) use (&$reported): void {
+                $reported[$fileName] = $error;
+            },
+        );
+
+        self::assertSame([], $matches);
+        self::assertSame(['DuplicateAlias.php'], array_keys($reported));
+        self::assertStringContainsString('already in use', $reported['DuplicateAlias.php']);
+    }
+
+    /**
+     * @return iterable<string, array{string, array<class-string, array<string, mixed>>}>
+     */
+    public static function codeTheCoreVisitorsCannotHandleProvider(): iterable
+    {
+        yield 'makeInstance with an empty class name' => [
+            "<?php\n\\" . GeneralUtility::class . "::makeInstance('');\n",
+            [],
+        ];
+        yield 'dynamic class constant fetch' => [
+            "<?php\nenum Suit: string { case Hearts = 'H'; }\n\$case = 'Hearts';\necho Suit::{\$case}->value;\n",
+            [ClassConstantMatcher::class => ['Foo\\Bar::BAZ' => ['restFiles' => ['Breaking-12345-Example.rst']]]],
+        ];
+    }
+
+    /**
+     * @param array<class-string, array<string, mixed>> $matcherConfigurations
+     */
+    #[Test]
+    #[DataProvider('codeTheCoreVisitorsCannotHandleProvider')]
+    public function scanFileReportsCodeTheCoreVisitorsCannotHandle(string $code, array $matcherConfigurations): void
+    {
+        $this->createTemporaryDirectory();
+        $file = $this->writeScannedFile('Valid.php', $code);
+        $reported = [];
+
+        // GeneratorClassesResolver also raises a PHP warning for the empty
+        // class name before it throws; keep it out of the test output.
+        set_error_handler(static fn (): bool => true, \E_WARNING);
+        try {
+            $matches = $this->subject->scanFile(
+                $file,
+                null,
+                $matcherConfigurations,
+                static function (string $fileName, string $error) use (&$reported): void {
+                    $reported[$fileName] = $error;
+                },
+            );
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([], $matches);
+        self::assertSame(['Valid.php'], array_keys($reported));
+        self::assertStringStartsWith('The scanner failed on this file: ', $reported['Valid.php']);
+    }
+
+    #[Test]
+    public function scanPathSkipsADirectoryThatCannotBeRead(): void
+    {
+        if (\function_exists('posix_geteuid') && posix_geteuid() === 0) {
+            self::markTestSkipped('File permissions do not restrict root.');
+        }
+
+        $directory = $this->createTemporaryDirectory();
+        $this->writeScannedFile('Classes/Readable.php', '<?php function (' . "\n");
+        $this->writeScannedFile('Locked/Hidden.php', '<?php function (' . "\n");
+        chmod($directory . '/Locked', 0o000);
+        $subject = new class extends ExtensionScannerService {
+            public function getMatcherConfigurations(): array
+            {
+                return [];
+            }
+        };
+        $reported = [];
+
+        try {
+            $subject->scanPath(
+                $directory,
+                null,
+                static function (string $fileName, string $error) use (&$reported): void {
+                    $reported[$fileName] = $error;
+                },
+            );
+        } finally {
+            chmod($directory . '/Locked', 0o755);
+        }
+
+        self::assertSame(['Classes/Readable.php'], array_keys($reported));
+    }
+
+    #[Test]
+    public function scanFileReportsAFileThatCannotBeReadAndReturnsNoMatches(): void
+    {
+        $directory = $this->createTemporaryDirectory();
+        $file = new SplFileInfo($directory . '/Classes/Missing.php', 'Classes', 'Classes/Missing.php');
+        $reported = [];
+
+        $matches = $this->subject->scanFile(
+            $file,
+            null,
+            [],
+            static function (string $fileName, string $error) use (&$reported): void {
+                $reported[$fileName] = $error;
+            },
+        );
+
+        self::assertSame([], $matches);
+        self::assertSame(['Classes/Missing.php' => 'The file could not be read.'], $reported);
     }
 
     #[Test]

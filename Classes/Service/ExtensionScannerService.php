@@ -22,8 +22,10 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser;
 use PhpParser\ParserFactory;
+use RuntimeException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Throwable;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Install\ExtensionScanner\Php\CodeStatistics;
 use TYPO3\CMS\Install\ExtensionScanner\Php\GeneratorClassesResolver;
@@ -102,7 +104,7 @@ class ExtensionScannerService
      *
      * @param string        $path               Directory path to scan
      * @param callable|null $progressCallback   Optional callback for progress updates: fn(int $current, int $total)
-     * @param callable|null $parseErrorCallback Optional callback for parse errors: fn(string $file, string $error)
+     * @param callable|null $parseErrorCallback Optional callback for files that cannot be read or parsed: fn(string $file, string $error)
      *
      * @return list<ScanMatch> Array of scan matches
      */
@@ -119,7 +121,10 @@ class ExtensionScannerService
             ->name('*.php')
             // Directory names at any depth. notPath('vendor') would match the
             // substring anywhere in the path and also skip Classes/vendorApi.php.
-            ->exclude(['vendor', 'node_modules', '.Build']);
+            ->exclude(['vendor', 'node_modules', '.Build'])
+            // A directory that cannot be read is skipped instead of ending the
+            // scan with an exception that names its path.
+            ->ignoreUnreadableDirs();
 
         $files = iterator_to_array($finder);
         $fileCount = \count($files);
@@ -152,7 +157,7 @@ class ExtensionScannerService
      * @param SplFileInfo                                                         $file                  The file to scan
      * @param Parser|null                                                         $parser                Optional parser instance (for performance when scanning multiple files)
      * @param array<class-string<AbstractCoreMatcher>, array<string, mixed>>|null $matcherConfigurations Optional matcher configs
-     * @param callable|null                                                       $parseErrorCallback    Optional callback for parse errors
+     * @param callable|null                                                       $parseErrorCallback    Optional callback for files that cannot be read or parsed
      *
      * @return list<ScanMatch>
      */
@@ -166,48 +171,70 @@ class ExtensionScannerService
         $parser ??= $this->getParser();
         $matcherConfigurations ??= $this->getMatcherConfigurations();
 
-        $fileContent = $file->getContents();
+        try {
+            $fileContent = $file->getContents();
+        } catch (RuntimeException) {
+            // The exception message names the path; report a fixed message so
+            // the scan continues and nothing from the file name reaches the
+            // terminal unfiltered.
+            if ($parseErrorCallback !== null) {
+                $parseErrorCallback($file->getRelativePathname(), 'The file could not be read.');
+            }
+
+            return $matches;
+        }
 
         try {
             $statements = $parser->parse($fileContent);
+            if ($statements === null) {
+                return $matches;
+            }
+
+            // First pass: resolve names and check if file is ignored. The name
+            // resolver throws PhpParser\Error for code that does not compile,
+            // such as two use statements with the same alias.
+            $traverser = new NodeTraverser();
+            $traverser->addVisitor(new NameResolver());
+            $traverser->addVisitor(new GeneratorClassesResolver());
+
+            $codeStatistics = new CodeStatistics();
+            $traverser->addVisitor($codeStatistics);
+
+            $statements = $traverser->traverse($statements);
+
+            if ($codeStatistics->isFileIgnored()) {
+                return $matches;
+            }
+
+            // Second pass: run all matchers in a single traversal for better performance
+            $matcherTraverser = new NodeTraverser();
+            /** @var array<class-string<AbstractCoreMatcher>, AbstractCoreMatcher> $matchers */
+            $matchers = [];
+            foreach ($matcherConfigurations as $matcherClass => $configuration) {
+                /** @var AbstractCoreMatcher $matcher */
+                $matcher = new $matcherClass($configuration);
+                $matchers[$matcherClass] = $matcher;
+                $matcherTraverser->addVisitor($matcher);
+            }
+
+            $matcherTraverser->traverse($statements);
         } catch (Error $e) {
             if ($parseErrorCallback !== null) {
                 $parseErrorCallback($file->getRelativePathname(), $e->getMessage());
             }
 
             return $matches;
-        }
+        } catch (Throwable $e) {
+            // The TYPO3 core visitors throw on some valid code, for example
+            // GeneratorClassesResolver on makeInstance('') and
+            // ClassConstantMatcher on Suit::{$name}. One file must not end
+            // the scan of the others.
+            if ($parseErrorCallback !== null) {
+                $parseErrorCallback($file->getRelativePathname(), 'The scanner failed on this file: ' . $e->getMessage());
+            }
 
-        if ($statements === null) {
             return $matches;
         }
-
-        // First pass: resolve names and check if file is ignored
-        $traverser = new NodeTraverser();
-        $traverser->addVisitor(new NameResolver());
-        $traverser->addVisitor(new GeneratorClassesResolver());
-
-        $codeStatistics = new CodeStatistics();
-        $traverser->addVisitor($codeStatistics);
-
-        $statements = $traverser->traverse($statements);
-
-        if ($codeStatistics->isFileIgnored()) {
-            return $matches;
-        }
-
-        // Second pass: run all matchers in a single traversal for better performance
-        $matcherTraverser = new NodeTraverser();
-        /** @var array<class-string<AbstractCoreMatcher>, AbstractCoreMatcher> $matchers */
-        $matchers = [];
-        foreach ($matcherConfigurations as $matcherClass => $configuration) {
-            /** @var AbstractCoreMatcher $matcher */
-            $matcher = new $matcherClass($configuration);
-            $matchers[$matcherClass] = $matcher;
-            $matcherTraverser->addVisitor($matcher);
-        }
-
-        $matcherTraverser->traverse($statements);
 
         // Collect matches from all matchers and convert to DTOs
         $relativeFile = $file->getRelativePathname();

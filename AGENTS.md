@@ -47,7 +47,8 @@ Classes/
 │   ├── OutputFormatterInterface.php
 │   ├── TableOutputFormatter.php
 │   ├── JsonOutputFormatter.php
-│   └── CheckstyleOutputFormatter.php
+│   ├── CheckstyleOutputFormatter.php
+│   └── ConsoleText.php                  # Makes scanned-code text safe for console output
 └── Service/ExtensionScannerService.php  # Core scanning logic using TYPO3 matchers
 ```
 

@@ -53,7 +53,7 @@ class TableOutputFormatter implements OutputFormatterInterface
                 continue;
             }
 
-            $this->io->title(\sprintf('Results for: %s', (string) $extensionKey));
+            $this->io->title(\sprintf('Results for: %s', ConsoleText::forFormattedOutput((string) $extensionKey)));
 
             $table = new Table($output);
             $table->setHeaders(['File', 'Line', 'Type', 'Message', 'Indicator']);
@@ -71,10 +71,10 @@ class TableOutputFormatter implements OutputFormatterInterface
                 }
 
                 $table->addRow([
-                    $match->file,
+                    ConsoleText::forFormattedOutput($match->file),
                     (string) $match->line,
                     $match->getMatchType(),
-                    $message,
+                    ConsoleText::forFormattedOutput($message),
                     $indicator,
                 ]);
             }

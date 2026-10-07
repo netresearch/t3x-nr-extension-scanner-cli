@@ -153,4 +153,32 @@ final class CheckstyleOutputFormatterTest extends TestCase
         self::assertStringContainsString('&lt;special&gt;', $xml);
         self::assertStringContainsString('&amp;', $xml);
     }
+
+    #[Test]
+    public function controlCharactersInFileNamesAndMessagesAreReplaced(): void
+    {
+        $output = new BufferedOutput();
+        $matches = [
+            'test_extension' => [
+                new ScanMatch(
+                    "Classes/\x1b[2JTest.php",
+                    "/var/www/ext/Classes/\x1b[2JTest.php",
+                    3,
+                    'strong',
+                    "Message\x07 with bell",
+                    'TestMatcher',
+                ),
+            ],
+        ];
+
+        $this->subject->format($output, $matches, 1, 0);
+        $xml = $output->fetch();
+
+        self::assertStringNotContainsString("\x1b", $xml);
+        self::assertStringNotContainsString("\x07", $xml);
+        $document = simplexml_load_string($xml);
+        self::assertNotFalse($document);
+        self::assertSame('/var/www/ext/Classes/?[2JTest.php', (string) $document->file['name']);
+        self::assertSame('Message? with bell', (string) $document->file->error['message']);
+    }
 }

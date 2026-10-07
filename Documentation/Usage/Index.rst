@@ -141,6 +141,9 @@ For cleaner CI/CD logs:
 
    bin/typo3 extension:scan my_extension --no-progress --format=json
 
+The report goes to standard output. Messages, warnings and the progress
+counter go to standard error, so ``> report.json`` captures only the report.
+
 Include system extensions
 -------------------------
 
