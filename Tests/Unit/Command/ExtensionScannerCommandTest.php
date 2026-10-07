@@ -89,6 +89,8 @@ final class ExtensionScannerCommandTest extends TestCase
         $command = new class($service, $this->createStub(PackageManager::class)) extends ExtensionScannerCommand {
             protected function initializeBackendAuthentication(): void
             {
+                // Intentionally empty: the unit test runs without a database,
+                // and the scan does not use the backend user.
             }
         };
         $command->setName('extension:scan');
