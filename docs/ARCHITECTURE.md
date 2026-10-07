@@ -17,6 +17,7 @@ Agent-facing component map. For coding conventions see [`../Classes/AGENTS.md`](
 | Result DTO | `Classes/Dto/ScanMatch.php` | Immutable `final readonly` value object per finding (file, line, indicator strong/weak, message, matcher, RST references) |
 | Formatter contract | `Classes/Output/OutputFormatterInterface.php` | Strategy interface for output rendering |
 | Formatters | `Classes/Output/TableOutputFormatter.php`, `JsonOutputFormatter.php`, `CheckstyleOutputFormatter.php` | Render matches for humans (table) or CI consumers (JSON, Checkstyle XML) |
+| Console text | `Classes/Output/ConsoleText.php` | Replaces control characters and escapes console tags in text from the scanned code (file names, parser messages) |
 | DI wiring | `Configuration/Services.yaml` | Autowiring; registers the command under `extension:scan` (`schedulable: false`) |
 
 ## Data Flow
@@ -24,7 +25,7 @@ Agent-facing component map. For coding conventions see [`../Classes/AGENTS.md`](
 1. `ExtensionScannerCommand` bootstraps backend authentication and resolves the scan targets via the TYPO3 `PackageManager` (extension keys, a custom `--path`, or `--all` third-party extensions).
 2. For each target, `ExtensionScannerService` walks the PHP files, parses each with `nikic/php-parser`, and applies the core matcher set (method calls, class names, constants, property access, annotations, …).
 3. Raw matcher output is normalized into `ScanMatch` DTOs via `ScanMatch::fromMatcherOutput()`.
-4. The chosen `OutputFormatterInterface` implementation renders all matches; the command exits non-zero on strong matches (and on weak matches with `--fail-on-weak`).
+4. The chosen `OutputFormatterInterface` implementation renders all matches to standard output; the command's messages and progress go to standard error. The command exits non-zero on strong matches (and on weak matches with `--fail-on-weak`).
 
 ## Key Decisions
 

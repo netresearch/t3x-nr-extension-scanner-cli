@@ -18,6 +18,7 @@ namespace Netresearch\ExtensionScannerCli\Command;
 
 use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
 use Netresearch\ExtensionScannerCli\Output\CheckstyleOutputFormatter;
+use Netresearch\ExtensionScannerCli\Output\ConsoleText;
 use Netresearch\ExtensionScannerCli\Output\JsonOutputFormatter;
 use Netresearch\ExtensionScannerCli\Output\OutputFormatterInterface;
 use Netresearch\ExtensionScannerCli\Output\TableOutputFormatter;
@@ -26,6 +27,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Core\Bootstrap;
@@ -119,10 +121,14 @@ class ExtensionScannerCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        // Results go to stdout; messages, progress and section headers go to
+        // stderr, so that json and checkstyle output stays parseable.
+        $io = new SymfonyStyle(
+            $input,
+            $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output,
+        );
 
-        // Ensure full TYPO3 is bootstrapped for package manager access
-        Bootstrap::initializeBackendAuthentication();
+        $this->initializeBackendAuthentication();
 
         /** @var array<string> $extensions */
         $extensions = (array) $input->getArgument('extensions');
@@ -143,7 +149,7 @@ class ExtensionScannerCommand extends Command
 
         // Validate format option
         if (!\in_array($format, self::SUPPORTED_FORMATS, true)) {
-            $io->error(\sprintf('Invalid format "%s". Use: table, json, or checkstyle', $format));
+            $io->error(\sprintf('Invalid format "%s". Use: table, json, or checkstyle', ConsoleText::withoutControlCharacters($format)));
 
             return Command::FAILURE;
         }
@@ -174,7 +180,7 @@ class ExtensionScannerCommand extends Command
 
         foreach ($pathsToScan as $extensionKey => $path) {
             if (!$noProgress && $format === 'table') {
-                $io->section(\sprintf('Scanning: %s', $extensionKey));
+                $io->section(\sprintf('Scanning: %s', ConsoleText::forFormattedOutput($extensionKey)));
             }
 
             $extensionMatches = $this->scanExtensionPath(
@@ -192,7 +198,7 @@ class ExtensionScannerCommand extends Command
         }
 
         // Output results using appropriate formatter
-        $formatter = $this->createFormatter($format, $io);
+        $formatter = $this->createFormatter($format, new SymfonyStyle($input, $output));
         $formatter->format($output, $allMatches, $totalStrong, $totalWeak);
 
         // Determine exit code
@@ -205,6 +211,15 @@ class ExtensionScannerCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Bootstraps the backend user for the CLI run. A separate method so that
+     * unit tests can run the command without a database.
+     */
+    protected function initializeBackendAuthentication(): void
+    {
+        Bootstrap::initializeBackendAuthentication();
     }
 
     /**
@@ -225,7 +240,7 @@ class ExtensionScannerCommand extends Command
 
         if ($customPath !== null) {
             if (!is_dir($customPath)) {
-                $io->error(\sprintf('Path does not exist: %s', $customPath));
+                $io->error(\sprintf('Path does not exist: %s', ConsoleText::withoutControlCharacters($customPath)));
 
                 return null;
             }
@@ -243,7 +258,7 @@ class ExtensionScannerCommand extends Command
         } elseif ($extensions !== []) {
             foreach ($extensions as $extensionKey) {
                 if (!$this->packageManager->isPackageActive($extensionKey)) {
-                    $io->error(\sprintf('Extension not found or not active: %s', $extensionKey));
+                    $io->error(\sprintf('Extension not found or not active: %s', ConsoleText::withoutControlCharacters($extensionKey)));
 
                     return null;
                 }
@@ -282,7 +297,11 @@ class ExtensionScannerCommand extends Command
         $parseErrorCallback = null;
         if ($verboseParseErrors) {
             $parseErrorCallback = static function (string $file, string $error) use ($io): void {
-                $io->warning(\sprintf('Parse error in %s: %s', $file, $error));
+                $io->warning(\sprintf(
+                    'Parse error in %s: %s',
+                    ConsoleText::withoutControlCharacters($file),
+                    ConsoleText::withoutControlCharacters($error),
+                ));
             };
         }
 
