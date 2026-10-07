@@ -62,18 +62,6 @@
             "infection/extension-installer": true,
             "captainhook/hook-installer": true,
             "phpstan/extension-installer": false
-        },
-        "audit": {
-            "ignore": [
-                "PKSA-pz1k-khnw-3j7j",
-                "PKSA-rwv7-ff55-f18g",
-                "PKSA-ns26-fz7n-2jm8",
-                "PKSA-q3vc-nbpk-d1gk",
-                "PKSA-2ssc-6m7w-s9xh",
-                "PKSA-b5m3-ttcx-cz18",
-                "PKSA-6d7x-2gs8-wr59",
-                "PKSA-3gg2-48j5-46ky"
-            ]
         }
     },
     "scripts": {
