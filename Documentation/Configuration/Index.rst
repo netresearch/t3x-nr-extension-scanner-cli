@@ -61,7 +61,8 @@ All configuration is done via command-line options:
    :type: boolean
    :Default: false
 
-   Show parse errors for files that cannot be analyzed due to syntax errors.
+   Show files that cannot be analyzed because they cannot be read or contain
+   syntax errors.
 
 Exit codes
 ==========

@@ -37,7 +37,7 @@ final class ExtensionScannerCommandTest extends TestCase
         $result = json_decode($tester->getDisplay(), true, 512, JSON_THROW_ON_ERROR);
         self::assertIsArray($result);
         self::assertSame(self::FILE, $result['extensions'][0]['matches'][0]['file']);
-        self::assertStringContainsString('Parse error in', $tester->getErrorOutput());
+        self::assertStringContainsString('Cannot analyse', $tester->getErrorOutput());
     }
 
     #[Test]
@@ -51,7 +51,7 @@ final class ExtensionScannerCommandTest extends TestCase
         );
 
         self::assertNotFalse(simplexml_load_string($tester->getDisplay()));
-        self::assertStringContainsString('Parse error in', $tester->getErrorOutput());
+        self::assertStringContainsString('Cannot analyse', $tester->getErrorOutput());
     }
 
     #[Test]

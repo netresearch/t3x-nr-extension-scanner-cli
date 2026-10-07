@@ -115,7 +115,7 @@ class ExtensionScannerCommand extends Command
                 'verbose-parse-errors',
                 null,
                 InputOption::VALUE_NONE,
-                'Show parse errors for files that cannot be analyzed',
+                'Show files that cannot be analyzed (unreadable or with syntax errors)',
             );
     }
 
@@ -298,7 +298,7 @@ class ExtensionScannerCommand extends Command
         if ($verboseParseErrors) {
             $parseErrorCallback = static function (string $file, string $error) use ($io): void {
                 $io->warning(\sprintf(
-                    'Parse error in %s: %s',
+                    'Cannot analyse %s: %s',
                     ConsoleText::withoutControlCharacters($file),
                     ConsoleText::withoutControlCharacters($error),
                 ));

@@ -78,6 +78,26 @@ final class ExtensionScannerServiceTest extends TestCase
     }
 
     #[Test]
+    public function scanFileReportsAFileThatCannotBeReadAndReturnsNoMatches(): void
+    {
+        $directory = $this->createTemporaryDirectory();
+        $file = new SplFileInfo($directory . '/Classes/Missing.php', 'Classes', 'Classes/Missing.php');
+        $reported = [];
+
+        $matches = $this->subject->scanFile(
+            $file,
+            null,
+            [],
+            static function (string $fileName, string $error) use (&$reported): void {
+                $reported[$fileName] = $error;
+            },
+        );
+
+        self::assertSame([], $matches);
+        self::assertSame(['Classes/Missing.php' => 'The file could not be read.'], $reported);
+    }
+
+    #[Test]
     public function scanPathSkipsDependencyDirectoriesButNotFilesWhoseNameContainsTheirName(): void
     {
         $directory = $this->createTemporaryDirectory();

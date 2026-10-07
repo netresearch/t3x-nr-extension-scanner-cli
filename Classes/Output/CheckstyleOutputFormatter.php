@@ -58,7 +58,8 @@ class CheckstyleOutputFormatter implements OutputFormatterInterface
 
         foreach ($matchesByFile as $filePath => $matches) {
             $xml->startElement('file');
-            // XML 1.0 cannot represent control characters.
+            // XML 1.0 cannot represent most C0 control characters, and the
+            // others would act on a terminal that shows the report.
             $xml->writeAttribute('name', ConsoleText::withoutControlCharacters($filePath));
 
             foreach ($matches as $match) {

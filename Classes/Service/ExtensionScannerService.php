@@ -22,6 +22,7 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser;
 use PhpParser\ParserFactory;
+use RuntimeException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -102,7 +103,7 @@ class ExtensionScannerService
      *
      * @param string        $path               Directory path to scan
      * @param callable|null $progressCallback   Optional callback for progress updates: fn(int $current, int $total)
-     * @param callable|null $parseErrorCallback Optional callback for parse errors: fn(string $file, string $error)
+     * @param callable|null $parseErrorCallback Optional callback for files that cannot be read or parsed: fn(string $file, string $error)
      *
      * @return list<ScanMatch> Array of scan matches
      */
@@ -152,7 +153,7 @@ class ExtensionScannerService
      * @param SplFileInfo                                                         $file                  The file to scan
      * @param Parser|null                                                         $parser                Optional parser instance (for performance when scanning multiple files)
      * @param array<class-string<AbstractCoreMatcher>, array<string, mixed>>|null $matcherConfigurations Optional matcher configs
-     * @param callable|null                                                       $parseErrorCallback    Optional callback for parse errors
+     * @param callable|null                                                       $parseErrorCallback    Optional callback for files that cannot be read or parsed
      *
      * @return list<ScanMatch>
      */
@@ -166,7 +167,18 @@ class ExtensionScannerService
         $parser ??= $this->getParser();
         $matcherConfigurations ??= $this->getMatcherConfigurations();
 
-        $fileContent = $file->getContents();
+        try {
+            $fileContent = $file->getContents();
+        } catch (RuntimeException) {
+            // The exception message names the path; report a fixed message so
+            // the scan continues and nothing from the file name reaches the
+            // terminal unfiltered.
+            if ($parseErrorCallback !== null) {
+                $parseErrorCallback($file->getRelativePathname(), 'The file could not be read.');
+            }
+
+            return $matches;
+        }
 
         try {
             $statements = $parser->parse($fileContent);
