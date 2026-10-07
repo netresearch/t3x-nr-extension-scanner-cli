@@ -108,4 +108,24 @@ final class JsonOutputFormatterTest extends TestCase
         self::assertSame('MethodCallMatcher', $extensionMatches['matcherClass']);
         self::assertContains('Deprecation-12345.rst', $extensionMatches['restFiles']);
     }
+
+    #[Test]
+    public function fileNamesWithConsoleTagsAreWrittenUnchanged(): void
+    {
+        foreach ([false, true] as $decorated) {
+            $output = new BufferedOutput(BufferedOutput::VERBOSITY_NORMAL, $decorated);
+            $file = 'Classes/<info>Tagged</info>.php';
+            $matches = [
+                'test_extension' => [
+                    new ScanMatch($file, '/var/www/ext/' . $file, 3, 'strong', 'Test message', 'TestMatcher'),
+                ],
+            ];
+
+            $this->subject->format($output, $matches, 1, 0);
+
+            $result = json_decode($output->fetch(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertIsArray($result);
+            self::assertSame($file, $result['extensions'][0]['matches'][0]['file']);
+        }
+    }
 }

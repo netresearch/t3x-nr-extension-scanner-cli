@@ -58,14 +58,15 @@ class CheckstyleOutputFormatter implements OutputFormatterInterface
 
         foreach ($matchesByFile as $filePath => $matches) {
             $xml->startElement('file');
-            $xml->writeAttribute('name', $filePath);
+            // XML 1.0 cannot represent control characters.
+            $xml->writeAttribute('name', ConsoleText::withoutControlCharacters($filePath));
 
             foreach ($matches as $match) {
                 $xml->startElement('error');
                 $xml->writeAttribute('line', (string) $match->line);
                 $xml->writeAttribute('column', '0');
                 $xml->writeAttribute('severity', $match->isStrong() ? 'error' : 'warning');
-                $xml->writeAttribute('message', $match->message);
+                $xml->writeAttribute('message', ConsoleText::withoutControlCharacters($match->message));
                 $xml->writeAttribute('source', 'TYPO3.ExtensionScanner.' . $match->getMatchType());
                 $xml->endElement(); // error
             }
@@ -76,6 +77,7 @@ class CheckstyleOutputFormatter implements OutputFormatterInterface
         $xml->endElement(); // checkstyle
         $xml->endDocument();
 
-        $output->write($xml->outputMemory());
+        // Raw: the document is written as is, without the console formatter.
+        $output->write($xml->outputMemory(), false, OutputInterface::OUTPUT_RAW);
     }
 }

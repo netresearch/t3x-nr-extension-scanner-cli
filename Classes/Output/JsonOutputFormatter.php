@@ -68,6 +68,8 @@ class JsonOutputFormatter implements OutputFormatterInterface
         }
 
         $json = json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
-        $output->writeln($json);
+        // Raw: the console formatter would read console tags in file names
+        // (such as <info>) as formatting and change the JSON.
+        $output->writeln($json, OutputInterface::OUTPUT_RAW);
     }
 }
