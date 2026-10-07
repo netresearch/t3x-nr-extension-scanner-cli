@@ -120,7 +120,10 @@ class ExtensionScannerService
             ->name('*.php')
             // Directory names at any depth. notPath('vendor') would match the
             // substring anywhere in the path and also skip Classes/vendorApi.php.
-            ->exclude(['vendor', 'node_modules', '.Build']);
+            ->exclude(['vendor', 'node_modules', '.Build'])
+            // A directory that cannot be read is skipped instead of ending the
+            // scan with an exception that names its path.
+            ->ignoreUnreadableDirs();
 
         $files = iterator_to_array($finder);
         $fileCount = \count($files);
@@ -182,6 +185,21 @@ class ExtensionScannerService
 
         try {
             $statements = $parser->parse($fileContent);
+            if ($statements === null) {
+                return $matches;
+            }
+
+            // First pass: resolve names and check if file is ignored. The name
+            // resolver throws PhpParser\Error for code that does not compile,
+            // such as two use statements with the same alias.
+            $traverser = new NodeTraverser();
+            $traverser->addVisitor(new NameResolver());
+            $traverser->addVisitor(new GeneratorClassesResolver());
+
+            $codeStatistics = new CodeStatistics();
+            $traverser->addVisitor($codeStatistics);
+
+            $statements = $traverser->traverse($statements);
         } catch (Error $e) {
             if ($parseErrorCallback !== null) {
                 $parseErrorCallback($file->getRelativePathname(), $e->getMessage());
@@ -189,20 +207,6 @@ class ExtensionScannerService
 
             return $matches;
         }
-
-        if ($statements === null) {
-            return $matches;
-        }
-
-        // First pass: resolve names and check if file is ignored
-        $traverser = new NodeTraverser();
-        $traverser->addVisitor(new NameResolver());
-        $traverser->addVisitor(new GeneratorClassesResolver());
-
-        $codeStatistics = new CodeStatistics();
-        $traverser->addVisitor($codeStatistics);
-
-        $statements = $traverser->traverse($statements);
 
         if ($codeStatistics->isFileIgnored()) {
             return $matches;

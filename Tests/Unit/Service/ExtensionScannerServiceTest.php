@@ -78,6 +78,61 @@ final class ExtensionScannerServiceTest extends TestCase
     }
 
     #[Test]
+    public function scanFileReportsANameResolutionErrorAndReturnsNoMatches(): void
+    {
+        $this->createTemporaryDirectory();
+        $file = $this->writeScannedFile('DuplicateAlias.php', "<?php\nuse A\\B as X;\nuse C\\D as X;\n");
+        $reported = [];
+
+        $matches = $this->subject->scanFile(
+            $file,
+            null,
+            [],
+            static function (string $fileName, string $error) use (&$reported): void {
+                $reported[$fileName] = $error;
+            },
+        );
+
+        self::assertSame([], $matches);
+        self::assertSame(['DuplicateAlias.php'], array_keys($reported));
+        self::assertStringContainsString('already in use', $reported['DuplicateAlias.php']);
+    }
+
+    #[Test]
+    public function scanPathSkipsADirectoryThatCannotBeRead(): void
+    {
+        if (\function_exists('posix_geteuid') && posix_geteuid() === 0) {
+            self::markTestSkipped('File permissions do not restrict root.');
+        }
+
+        $directory = $this->createTemporaryDirectory();
+        $this->writeScannedFile('Classes/Readable.php', '<?php function (' . "\n");
+        $this->writeScannedFile('Locked/Hidden.php', '<?php function (' . "\n");
+        chmod($directory . '/Locked', 0o000);
+        $subject = new class extends ExtensionScannerService {
+            public function getMatcherConfigurations(): array
+            {
+                return [];
+            }
+        };
+        $reported = [];
+
+        try {
+            $subject->scanPath(
+                $directory,
+                null,
+                static function (string $fileName, string $error) use (&$reported): void {
+                    $reported[$fileName] = $error;
+                },
+            );
+        } finally {
+            chmod($directory . '/Locked', 0o755);
+        }
+
+        self::assertSame(['Classes/Readable.php'], array_keys($reported));
+    }
+
+    #[Test]
     public function scanFileReportsAFileThatCannotBeReadAndReturnsNoMatches(): void
     {
         $directory = $this->createTemporaryDirectory();
