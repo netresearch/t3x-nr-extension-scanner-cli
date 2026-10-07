@@ -25,6 +25,7 @@ use PhpParser\ParserFactory;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Throwable;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Install\ExtensionScanner\Php\CodeStatistics;
 use TYPO3\CMS\Install\ExtensionScanner\Php\GeneratorClassesResolver;
@@ -200,30 +201,40 @@ class ExtensionScannerService
             $traverser->addVisitor($codeStatistics);
 
             $statements = $traverser->traverse($statements);
+
+            if ($codeStatistics->isFileIgnored()) {
+                return $matches;
+            }
+
+            // Second pass: run all matchers in a single traversal for better performance
+            $matcherTraverser = new NodeTraverser();
+            /** @var array<class-string<AbstractCoreMatcher>, AbstractCoreMatcher> $matchers */
+            $matchers = [];
+            foreach ($matcherConfigurations as $matcherClass => $configuration) {
+                /** @var AbstractCoreMatcher $matcher */
+                $matcher = new $matcherClass($configuration);
+                $matchers[$matcherClass] = $matcher;
+                $matcherTraverser->addVisitor($matcher);
+            }
+
+            $matcherTraverser->traverse($statements);
         } catch (Error $e) {
             if ($parseErrorCallback !== null) {
                 $parseErrorCallback($file->getRelativePathname(), $e->getMessage());
             }
 
             return $matches;
-        }
+        } catch (Throwable $e) {
+            // The TYPO3 core visitors throw on some valid code, for example
+            // GeneratorClassesResolver on makeInstance('') and
+            // ClassConstantMatcher on Suit::{$name}. One file must not end
+            // the scan of the others.
+            if ($parseErrorCallback !== null) {
+                $parseErrorCallback($file->getRelativePathname(), 'The scanner failed on this file: ' . $e->getMessage());
+            }
 
-        if ($codeStatistics->isFileIgnored()) {
             return $matches;
         }
-
-        // Second pass: run all matchers in a single traversal for better performance
-        $matcherTraverser = new NodeTraverser();
-        /** @var array<class-string<AbstractCoreMatcher>, AbstractCoreMatcher> $matchers */
-        $matchers = [];
-        foreach ($matcherConfigurations as $matcherClass => $configuration) {
-            /** @var AbstractCoreMatcher $matcher */
-            $matcher = new $matcherClass($configuration);
-            $matchers[$matcherClass] = $matcher;
-            $matcherTraverser->addVisitor($matcher);
-        }
-
-        $matcherTraverser->traverse($statements);
 
         // Collect matches from all matchers and convert to DTOs
         $relativeFile = $file->getRelativePathname();
