@@ -1,11 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * SPDX-License-Identifier: MIT
  * SPDX-FileCopyrightText: Netresearch DTT GmbH
  */
+
+declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
 
@@ -18,7 +18,7 @@ return static function (RectorConfig $rectorConfig) use ($configure): void {
     // (composer.json: php ^8.2, typo3/cms-core ^12.4 || ^13.4 || ^14.3).
     $configure($rectorConfig, __DIR__ . '/..', [
         'tests' => true,
-        'php' => '8.2',
+        'php'   => '8.2',
         'typo3' => 12,
     ]);
 };

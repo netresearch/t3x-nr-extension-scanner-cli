@@ -1,5 +1,10 @@
 <?php
 
+/*
+ * SPDX-License-Identifier: MIT
+ * SPDX-FileCopyrightText: Netresearch DTT GmbH
+ */
+
 declare(strict_types=1);
 
 /*
@@ -33,6 +38,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Package\PackageManager;
 
+use function in_array;
+use function is_string;
+use function sprintf;
+
 /**
  * CLI command to scan extensions for deprecated/removed TYPO3 API usage.
  *
@@ -60,13 +69,13 @@ class ExtensionScannerCommand extends Command
     {
         $this->setDescription('Scan extension code for deprecated/removed TYPO3 API usage')
             ->setHelp(
-                'This command scans PHP files in extensions for usage of deprecated or removed ' .
-                'TYPO3 Core API. It can be used in CI/CD pipelines to detect compatibility issues.' . PHP_EOL . PHP_EOL .
-                'Examples:' . PHP_EOL .
-                '  <info>bin/typo3 extension:scan my_extension</info>' . PHP_EOL .
-                '  <info>bin/typo3 extension:scan --path=/path/to/extension</info>' . PHP_EOL .
-                '  <info>bin/typo3 extension:scan my_extension --format=json</info>' . PHP_EOL .
-                '  <info>bin/typo3 extension:scan --all --format=checkstyle > report.xml</info>',
+                'This command scans PHP files in extensions for usage of deprecated or removed '
+                . 'TYPO3 Core API. It can be used in CI/CD pipelines to detect compatibility issues.' . PHP_EOL . PHP_EOL
+                . 'Examples:' . PHP_EOL
+                . '  <info>bin/typo3 extension:scan my_extension</info>' . PHP_EOL
+                . '  <info>bin/typo3 extension:scan --path=/path/to/extension</info>' . PHP_EOL
+                . '  <info>bin/typo3 extension:scan my_extension --format=json</info>' . PHP_EOL
+                . '  <info>bin/typo3 extension:scan --all --format=checkstyle > report.xml</info>',
             )
             ->addArgument(
                 'extensions',
@@ -135,9 +144,9 @@ class ExtensionScannerCommand extends Command
         /** @var string|null $customPath */
         $customPath = $input->getOption('path');
         /** @var bool $scanAll */
-        $scanAll = (bool) $input->getOption('all');
+        $scanAll      = (bool) $input->getOption('all');
         $formatOption = $input->getOption('format');
-        $format = \is_string($formatOption) ? $formatOption : 'table';
+        $format       = is_string($formatOption) ? $formatOption : 'table';
         /** @var bool $noProgress */
         $noProgress = (bool) $input->getOption('no-progress');
         /** @var bool $failOnWeak */
@@ -148,8 +157,8 @@ class ExtensionScannerCommand extends Command
         $verboseParseErrors = (bool) $input->getOption('verbose-parse-errors');
 
         // Validate format option
-        if (!\in_array($format, self::SUPPORTED_FORMATS, true)) {
-            $io->error(\sprintf('Invalid format "%s". Use: table, json, or checkstyle', ConsoleText::withoutControlCharacters($format)));
+        if (!in_array($format, self::SUPPORTED_FORMATS, true)) {
+            $io->error(sprintf('Invalid format "%s". Use: table, json, or checkstyle', ConsoleText::withoutControlCharacters($format)));
 
             return Command::FAILURE;
         }
@@ -174,13 +183,13 @@ class ExtensionScannerCommand extends Command
         }
 
         // Scan each path
-        $allMatches = [];
+        $allMatches  = [];
         $totalStrong = 0;
-        $totalWeak = 0;
+        $totalWeak   = 0;
 
         foreach ($pathsToScan as $extensionKey => $path) {
             if (!$noProgress && $format === 'table') {
-                $io->section(\sprintf('Scanning: %s', ConsoleText::forFormattedOutput($extensionKey)));
+                $io->section(sprintf('Scanning: %s', ConsoleText::forFormattedOutput($extensionKey)));
             }
 
             $extensionMatches = $this->scanExtensionPath(
@@ -240,7 +249,7 @@ class ExtensionScannerCommand extends Command
 
         if ($customPath !== null) {
             if (!is_dir($customPath)) {
-                $io->error(\sprintf('Path does not exist: %s', ConsoleText::withoutControlCharacters($customPath)));
+                $io->error(sprintf('Path does not exist: %s', ConsoleText::withoutControlCharacters($customPath)));
 
                 return null;
             }
@@ -258,12 +267,12 @@ class ExtensionScannerCommand extends Command
         } elseif ($extensions !== []) {
             foreach ($extensions as $extensionKey) {
                 if (!$this->packageManager->isPackageActive($extensionKey)) {
-                    $io->error(\sprintf('Extension not found or not active: %s', ConsoleText::withoutControlCharacters($extensionKey)));
+                    $io->error(sprintf('Extension not found or not active: %s', ConsoleText::withoutControlCharacters($extensionKey)));
 
                     return null;
                 }
 
-                $package = $this->packageManager->getPackage($extensionKey);
+                $package                    = $this->packageManager->getPackage($extensionKey);
                 $pathsToScan[$extensionKey] = $package->getPackagePath();
             }
         } else {
@@ -290,14 +299,14 @@ class ExtensionScannerCommand extends Command
         $progressCallback = null;
         if (!$noProgress && $format === 'table') {
             $progressCallback = static function (int $current, int $total) use ($io): void {
-                $io->write(\sprintf("\rProcessed %d/%d files", $current, $total));
+                $io->write(sprintf("\rProcessed %d/%d files", $current, $total));
             };
         }
 
         $parseErrorCallback = null;
         if ($verboseParseErrors) {
             $parseErrorCallback = static function (string $file, string $error) use ($io): void {
-                $io->warning(\sprintf(
+                $io->warning(sprintf(
                     'Cannot analyse %s: %s',
                     ConsoleText::withoutControlCharacters($file),
                     ConsoleText::withoutControlCharacters($error),
@@ -320,9 +329,9 @@ class ExtensionScannerCommand extends Command
     private function createFormatter(string $format, SymfonyStyle $io): OutputFormatterInterface
     {
         return match ($format) {
-            'json' => new JsonOutputFormatter(),
+            'json'       => new JsonOutputFormatter(),
             'checkstyle' => new CheckstyleOutputFormatter(),
-            default => new TableOutputFormatter($io),
+            default      => new TableOutputFormatter($io),
         };
     }
 }

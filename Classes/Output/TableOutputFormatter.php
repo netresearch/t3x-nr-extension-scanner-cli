@@ -1,5 +1,10 @@
 <?php
 
+/*
+ * SPDX-License-Identifier: MIT
+ * SPDX-FileCopyrightText: Netresearch DTT GmbH
+ */
+
 declare(strict_types=1);
 
 /*
@@ -21,6 +26,9 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+use function sprintf;
+use function strlen;
+
 /**
  * Table output formatter for human-readable console output.
  *
@@ -31,8 +39,7 @@ class TableOutputFormatter implements OutputFormatterInterface
 {
     public function __construct(
         private readonly SymfonyStyle $io,
-    ) {
-    }
+    ) {}
 
     public function format(
         OutputInterface $output,
@@ -53,7 +60,7 @@ class TableOutputFormatter implements OutputFormatterInterface
                 continue;
             }
 
-            $this->io->title(\sprintf('Results for: %s', ConsoleText::forFormattedOutput((string) $extensionKey)));
+            $this->io->title(sprintf('Results for: %s', ConsoleText::forFormattedOutput((string) $extensionKey)));
 
             $table = new Table($output);
             $table->setHeaders(['File', 'Line', 'Type', 'Message', 'Indicator']);
@@ -66,7 +73,7 @@ class TableOutputFormatter implements OutputFormatterInterface
 
                 // Truncate long messages for table display
                 $message = $match->message;
-                if (\strlen($message) > 60) {
+                if (strlen($message) > 60) {
                     $message = substr($message, 0, 57) . '...';
                 }
 
@@ -87,14 +94,14 @@ class TableOutputFormatter implements OutputFormatterInterface
         $this->io->section('Summary');
 
         if ($totalStrong > 0) {
-            $this->io->error(\sprintf(
+            $this->io->error(sprintf(
                 'Found %d strong match(es) that WILL break on upgrade.',
                 $totalStrong,
             ));
         }
 
         if ($totalWeak > 0) {
-            $this->io->warning(\sprintf(
+            $this->io->warning(sprintf(
                 'Found %d weak match(es) that MAY need attention.',
                 $totalWeak,
             ));
@@ -102,7 +109,7 @@ class TableOutputFormatter implements OutputFormatterInterface
 
         $this->io->text([
             '',
-            \sprintf('Total issues: %d (%d strong, %d weak)', $totalMatches, $totalStrong, $totalWeak),
+            sprintf('Total issues: %d (%d strong, %d weak)', $totalMatches, $totalStrong, $totalWeak),
             '',
             '<info>Strong matches</info>: Definite usage of removed/deprecated API - must be fixed.',
             '<comment>Weak matches</comment>: Potential matches that need manual verification.',

@@ -1,11 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * SPDX-License-Identifier: MIT
  * SPDX-FileCopyrightText: Netresearch DTT GmbH
  */
+
+declare(strict_types=1);
 
 namespace Netresearch\ExtensionScannerCli\Tests\Unit\Output;
 
@@ -31,7 +31,7 @@ final class JsonOutputFormatterTest extends TestCase
     #[Test]
     public function formatOutputsValidJson(): void
     {
-        $output = new BufferedOutput();
+        $output  = new BufferedOutput();
         $matches = [
             'test_extension' => [
                 new ScanMatch(
@@ -81,7 +81,7 @@ final class JsonOutputFormatterTest extends TestCase
     #[Test]
     public function formatIncludesMatchDetails(): void
     {
-        $output = new BufferedOutput();
+        $output  = new BufferedOutput();
         $matches = [
             'my_extension' => [
                 new ScanMatch(
@@ -98,7 +98,7 @@ final class JsonOutputFormatterTest extends TestCase
 
         $this->subject->format($output, $matches, 1, 0);
 
-        $result = json_decode($output->fetch(), true);
+        $result           = json_decode($output->fetch(), true);
         $extensionMatches = $result['extensions'][0]['matches'][0];
 
         self::assertSame('Classes/Service.php', $extensionMatches['file']);
@@ -113,8 +113,8 @@ final class JsonOutputFormatterTest extends TestCase
     public function fileNamesWithConsoleTagsAreWrittenUnchanged(): void
     {
         foreach ([false, true] as $decorated) {
-            $output = new BufferedOutput(BufferedOutput::VERBOSITY_NORMAL, $decorated);
-            $file = 'Classes/<info>Tagged</info>.php';
+            $output  = new BufferedOutput(BufferedOutput::VERBOSITY_NORMAL, $decorated);
+            $file    = 'Classes/<info>Tagged</info>.php';
             $matches = [
                 'test_extension' => [
                     new ScanMatch($file, '/var/www/ext/' . $file, 3, 'strong', 'Test message', 'TestMatcher'),

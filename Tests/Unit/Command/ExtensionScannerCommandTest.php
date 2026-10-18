@@ -1,11 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * SPDX-License-Identifier: MIT
  * SPDX-FileCopyrightText: Netresearch DTT GmbH
  */
+
+declare(strict_types=1);
 
 namespace Netresearch\ExtensionScannerCli\Tests\Unit\Command;
 
@@ -86,7 +86,7 @@ final class ExtensionScannerCommandTest extends TestCase
         );
         $service->method('calculateStatistics')->willReturn(['total' => 1, 'strong' => 1, 'weak' => 0]);
 
-        $command = new class($service, $this->createStub(PackageManager::class)) extends ExtensionScannerCommand {
+        $command = new class ($service, $this->createStub(PackageManager::class)) extends ExtensionScannerCommand {
             protected function initializeBackendAuthentication(): void
             {
                 // Intentionally empty: the unit test runs without a database,

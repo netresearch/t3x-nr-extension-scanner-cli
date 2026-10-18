@@ -1,11 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * SPDX-License-Identifier: MIT
  * SPDX-FileCopyrightText: Netresearch DTT GmbH
  */
+
+declare(strict_types=1);
 
 namespace Netresearch\ExtensionScannerCli\Tests\Unit\Output;
 
@@ -30,7 +30,7 @@ final class CheckstyleOutputFormatterTest extends TestCase
     #[Test]
     public function formatOutputsValidXml(): void
     {
-        $output = new BufferedOutput();
+        $output  = new BufferedOutput();
         $matches = [
             'test_extension' => [
                 new ScanMatch(
@@ -55,7 +55,7 @@ final class CheckstyleOutputFormatterTest extends TestCase
     #[Test]
     public function formatCreatesFileElementsForEachFile(): void
     {
-        $output = new BufferedOutput();
+        $output  = new BufferedOutput();
         $matches = [
             'ext1' => [
                 new ScanMatch(
@@ -89,7 +89,7 @@ final class CheckstyleOutputFormatterTest extends TestCase
     #[Test]
     public function formatUsesErrorSeverityForStrongMatches(): void
     {
-        $output = new BufferedOutput();
+        $output  = new BufferedOutput();
         $matches = [
             'ext' => [
                 new ScanMatch(
@@ -111,7 +111,7 @@ final class CheckstyleOutputFormatterTest extends TestCase
     #[Test]
     public function formatUsesWarningSeverityForWeakMatches(): void
     {
-        $output = new BufferedOutput();
+        $output  = new BufferedOutput();
         $matches = [
             'ext' => [
                 new ScanMatch(
@@ -133,7 +133,7 @@ final class CheckstyleOutputFormatterTest extends TestCase
     #[Test]
     public function formatEscapesSpecialXmlCharacters(): void
     {
-        $output = new BufferedOutput();
+        $output  = new BufferedOutput();
         $matches = [
             'ext' => [
                 new ScanMatch(
@@ -157,7 +157,7 @@ final class CheckstyleOutputFormatterTest extends TestCase
     #[Test]
     public function controlCharactersInFileNamesAndMessagesAreReplaced(): void
     {
-        $output = new BufferedOutput();
+        $output  = new BufferedOutput();
         $matches = [
             'test_extension' => [
                 new ScanMatch(
