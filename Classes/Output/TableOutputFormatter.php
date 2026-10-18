@@ -49,7 +49,7 @@ class TableOutputFormatter implements OutputFormatterInterface
         }
 
         foreach ($allMatches as $extensionKey => $matches) {
-            if (empty($matches)) {
+            if ($matches === []) {
                 continue;
             }
 

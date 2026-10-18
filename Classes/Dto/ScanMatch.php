@@ -66,8 +66,9 @@ final readonly class ScanMatch
     public function getMatcherName(): string
     {
         $parts = explode('\\', $this->matcherClass);
+        $name = end($parts);
 
-        return end($parts) ?: $this->matcherClass;
+        return $name !== false && $name !== '' ? $name : $this->matcherClass;
     }
 
     /**

@@ -102,9 +102,9 @@ class ExtensionScannerService
     /**
      * Scan a directory path for deprecated API usage.
      *
-     * @param string        $path               Directory path to scan
-     * @param callable|null $progressCallback   Optional callback for progress updates: fn(int $current, int $total)
-     * @param callable|null $parseErrorCallback Optional callback for files that cannot be read or parsed: fn(string $file, string $error)
+     * @param string                              $path               Directory path to scan
+     * @param (callable(int, int): void)|null       $progressCallback   Optional callback for progress updates: fn(int $current, int $total)
+     * @param (callable(string, string): void)|null $parseErrorCallback Optional callback for files that cannot be read or parsed: fn(string $file, string $error)
      *
      * @return list<ScanMatch> Array of scan matches
      */
@@ -157,7 +157,7 @@ class ExtensionScannerService
      * @param SplFileInfo                                                         $file                  The file to scan
      * @param Parser|null                                                         $parser                Optional parser instance (for performance when scanning multiple files)
      * @param array<class-string<AbstractCoreMatcher>, array<string, mixed>>|null $matcherConfigurations Optional matcher configs
-     * @param callable|null                                                       $parseErrorCallback    Optional callback for files that cannot be read or parsed
+     * @param (callable(string, string): void)|null                               $parseErrorCallback    Optional callback for files that cannot be read or parsed: fn(string $file, string $error)
      *
      * @return list<ScanMatch>
      */
@@ -238,7 +238,8 @@ class ExtensionScannerService
 
         // Collect matches from all matchers and convert to DTOs
         $relativeFile = $file->getRelativePathname();
-        $absolutePath = $file->getRealPath() ?: $relativeFile;
+        $realPath = $file->getRealPath();
+        $absolutePath = $realPath !== false ? $realPath : $relativeFile;
 
         foreach ($matchers as $matcherClass => $matcher) {
             /** @var array<string, mixed> $rawMatch */
