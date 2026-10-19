@@ -1,16 +1,21 @@
 # SPDX-License-Identifier: MIT
 # SPDX-FileCopyrightText: Netresearch DTT GmbH
 
+# The shared config of netresearch/typo3-ci-workflows sets level 10,
+# treatPhpDocTypesAsCertain, the strictness flags and the excludePaths;
+# phpstan/extension-installer registers phpstan-typo3 and the other PHPStan
+# extensions. phpstan-shared.php includes it only where the package is
+# installed, see the comment there.
 includes:
     - %currentWorkingDirectory%/.Build/vendor/phpstan/phpstan/conf/bleedingEdge.neon
+    - phpstan-shared.php
 
 parameters:
-    level: 10
     paths:
         - %currentWorkingDirectory%/Classes
-    excludePaths:
-        - %currentWorkingDirectory%/.Build/*
-    treatPhpDocTypesAsCertain: false
+    # Kept below the shared value (true): internal method availability varies
+    # between the TYPO3 versions of the CI matrix, so not every pattern below
+    # matches on every cell (c8059d8).
     reportUnmatchedIgnoredErrors: false
     # We deliberately use @internal TYPO3 Extension Scanner classes
     # This is documented in the code and acceptable for a dev tool

@@ -1,5 +1,10 @@
 <?php
 
+/*
+ * SPDX-License-Identifier: MIT
+ * SPDX-FileCopyrightText: Netresearch DTT GmbH
+ */
+
 declare(strict_types=1);
 
 /*
@@ -19,6 +24,8 @@ namespace Netresearch\ExtensionScannerCli\Output;
 use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use function count;
+
 /**
  * JSON output formatter for machine-readable output.
  *
@@ -35,21 +42,21 @@ class JsonOutputFormatter implements OutputFormatterInterface
     ): void {
         $result = [
             'summary' => [
-                'total' => $totalStrong + $totalWeak,
-                'strong' => $totalStrong,
-                'weak' => $totalWeak,
-                'extensions_scanned' => \count($allMatches),
-                'timestamp' => date('c'),
+                'total'              => $totalStrong + $totalWeak,
+                'strong'             => $totalStrong,
+                'weak'               => $totalWeak,
+                'extensions_scanned' => count($allMatches),
+                'timestamp'          => date('c'),
             ],
             'extensions' => [],
         ];
 
         foreach ($allMatches as $extensionKey => $matches) {
             $extensionResult = [
-                'key' => $extensionKey,
-                'total' => \count($matches),
-                'strong' => 0,
-                'weak' => 0,
+                'key'     => $extensionKey,
+                'total'   => count($matches),
+                'strong'  => 0,
+                'weak'    => 0,
                 'matches' => [],
             ];
 

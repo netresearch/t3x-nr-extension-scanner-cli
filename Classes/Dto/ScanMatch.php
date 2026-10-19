@@ -1,5 +1,10 @@
 <?php
 
+/*
+ * SPDX-License-Identifier: MIT
+ * SPDX-FileCopyrightText: Netresearch DTT GmbH
+ */
+
 declare(strict_types=1);
 
 /*
@@ -15,6 +20,9 @@ declare(strict_types=1);
  */
 
 namespace Netresearch\ExtensionScannerCli\Dto;
+
+use function is_array;
+use function is_string;
 
 /**
  * Data Transfer Object representing a single scanner match result.
@@ -41,8 +49,7 @@ final readonly class ScanMatch
         public string $message,
         public string $matcherClass,
         public array $restFiles = [],
-    ) {
-    }
+    ) {}
 
     /**
      * Check if this is a strong (definite) match.
@@ -66,8 +73,9 @@ final readonly class ScanMatch
     public function getMatcherName(): string
     {
         $parts = explode('\\', $this->matcherClass);
+        $name  = end($parts);
 
-        return end($parts) ?: $this->matcherClass;
+        return $name !== false && $name !== '' ? $name : $this->matcherClass;
     }
 
     /**
@@ -101,10 +109,10 @@ final readonly class ScanMatch
             file: $relativeFile,
             absolutePath: $absolutePath,
             line: isset($rawMatch['line']) && is_numeric($rawMatch['line']) ? (int) $rawMatch['line'] : 0,
-            indicator: isset($rawMatch['indicator']) && \is_string($rawMatch['indicator']) ? $rawMatch['indicator'] : 'strong',
-            message: isset($rawMatch['message']) && \is_string($rawMatch['message']) ? $rawMatch['message'] : 'Unknown issue',
+            indicator: isset($rawMatch['indicator']) && is_string($rawMatch['indicator']) ? $rawMatch['indicator'] : 'strong',
+            message: isset($rawMatch['message']) && is_string($rawMatch['message']) ? $rawMatch['message'] : 'Unknown issue',
             matcherClass: $matcherClass,
-            restFiles: \is_array($restFiles) ? array_values(array_filter($restFiles, \is_string(...))) : [],
+            restFiles: is_array($restFiles) ? array_values(array_filter($restFiles, is_string(...))) : [],
         );
     }
 
@@ -116,13 +124,13 @@ final readonly class ScanMatch
     public function toArray(): array
     {
         return [
-            'file' => $this->file,
+            'file'         => $this->file,
             'absolutePath' => $this->absolutePath,
-            'line' => $this->line,
-            'indicator' => $this->indicator,
-            'message' => $this->message,
+            'line'         => $this->line,
+            'indicator'    => $this->indicator,
+            'message'      => $this->message,
             'matcherClass' => $this->getMatcherName(),
-            'restFiles' => $this->restFiles,
+            'restFiles'    => $this->restFiles,
         ];
     }
 }

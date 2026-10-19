@@ -1,11 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * SPDX-License-Identifier: MIT
  * SPDX-FileCopyrightText: Netresearch DTT GmbH
  */
+
+declare(strict_types=1);
 
 namespace Netresearch\ExtensionScannerCli\Tests\Unit\Output;
 
@@ -25,7 +25,7 @@ final class TableOutputFormatterTest extends TestCase
     #[Test]
     public function fileNamesAndMessagesAreShownLiterally(): void
     {
-        $output = new BufferedOutput();
+        $output  = new BufferedOutput();
         $subject = new TableOutputFormatter(new SymfonyStyle(new ArrayInput([]), $output));
         $matches = [
             'ext<info>key</info>' => [

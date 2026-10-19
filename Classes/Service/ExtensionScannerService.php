@@ -1,5 +1,10 @@
 <?php
 
+/*
+ * SPDX-License-Identifier: MIT
+ * SPDX-FileCopyrightText: Netresearch DTT GmbH
+ */
+
 declare(strict_types=1);
 
 /*
@@ -51,6 +56,8 @@ use TYPO3\CMS\Install\ExtensionScanner\Php\Matcher\PropertyExistsStaticMatcher;
 use TYPO3\CMS\Install\ExtensionScanner\Php\Matcher\PropertyProtectedMatcher;
 use TYPO3\CMS\Install\ExtensionScanner\Php\Matcher\PropertyPublicMatcher;
 
+use function count;
+
 /**
  * Service for scanning PHP files for deprecated/removed TYPO3 API usage.
  *
@@ -70,26 +77,26 @@ class ExtensionScannerService
      * @var array<class-string<AbstractCoreMatcher>, string>
      */
     private const MATCHER_CONFIGURATIONS = [
-        ArrayDimensionMatcher::class => 'ArrayDimensionMatcher.php',
-        ArrayGlobalMatcher::class => 'ArrayGlobalMatcher.php',
-        ClassConstantMatcher::class => 'ClassConstantMatcher.php',
-        ClassNameMatcher::class => 'ClassNameMatcher.php',
-        ConstantMatcher::class => 'ConstantMatcher.php',
-        ConstructorArgumentMatcher::class => 'ConstructorArgumentMatcher.php',
-        FunctionCallMatcher::class => 'FunctionCallMatcher.php',
-        InterfaceMethodChangedMatcher::class => 'InterfaceMethodChangedMatcher.php',
-        MethodAnnotationMatcher::class => 'MethodAnnotationMatcher.php',
-        MethodArgumentDroppedMatcher::class => 'MethodArgumentDroppedMatcher.php',
-        MethodArgumentDroppedStaticMatcher::class => 'MethodArgumentDroppedStaticMatcher.php',
-        MethodArgumentRequiredMatcher::class => 'MethodArgumentRequiredMatcher.php',
+        ArrayDimensionMatcher::class               => 'ArrayDimensionMatcher.php',
+        ArrayGlobalMatcher::class                  => 'ArrayGlobalMatcher.php',
+        ClassConstantMatcher::class                => 'ClassConstantMatcher.php',
+        ClassNameMatcher::class                    => 'ClassNameMatcher.php',
+        ConstantMatcher::class                     => 'ConstantMatcher.php',
+        ConstructorArgumentMatcher::class          => 'ConstructorArgumentMatcher.php',
+        FunctionCallMatcher::class                 => 'FunctionCallMatcher.php',
+        InterfaceMethodChangedMatcher::class       => 'InterfaceMethodChangedMatcher.php',
+        MethodAnnotationMatcher::class             => 'MethodAnnotationMatcher.php',
+        MethodArgumentDroppedMatcher::class        => 'MethodArgumentDroppedMatcher.php',
+        MethodArgumentDroppedStaticMatcher::class  => 'MethodArgumentDroppedStaticMatcher.php',
+        MethodArgumentRequiredMatcher::class       => 'MethodArgumentRequiredMatcher.php',
         MethodArgumentRequiredStaticMatcher::class => 'MethodArgumentRequiredStaticMatcher.php',
-        MethodArgumentUnusedMatcher::class => 'MethodArgumentUnusedMatcher.php',
-        MethodCallMatcher::class => 'MethodCallMatcher.php',
-        MethodCallStaticMatcher::class => 'MethodCallStaticMatcher.php',
-        PropertyAnnotationMatcher::class => 'PropertyAnnotationMatcher.php',
-        PropertyExistsStaticMatcher::class => 'PropertyExistsStaticMatcher.php',
-        PropertyProtectedMatcher::class => 'PropertyProtectedMatcher.php',
-        PropertyPublicMatcher::class => 'PropertyPublicMatcher.php',
+        MethodArgumentUnusedMatcher::class         => 'MethodArgumentUnusedMatcher.php',
+        MethodCallMatcher::class                   => 'MethodCallMatcher.php',
+        MethodCallStaticMatcher::class             => 'MethodCallStaticMatcher.php',
+        PropertyAnnotationMatcher::class           => 'PropertyAnnotationMatcher.php',
+        PropertyExistsStaticMatcher::class         => 'PropertyExistsStaticMatcher.php',
+        PropertyProtectedMatcher::class            => 'PropertyProtectedMatcher.php',
+        PropertyPublicMatcher::class               => 'PropertyPublicMatcher.php',
     ];
 
     /**
@@ -102,9 +109,9 @@ class ExtensionScannerService
     /**
      * Scan a directory path for deprecated API usage.
      *
-     * @param string        $path               Directory path to scan
-     * @param callable|null $progressCallback   Optional callback for progress updates: fn(int $current, int $total)
-     * @param callable|null $parseErrorCallback Optional callback for files that cannot be read or parsed: fn(string $file, string $error)
+     * @param string                                $path               Directory path to scan
+     * @param (callable(int, int): void)|null       $progressCallback   Optional callback for progress updates: fn(int $current, int $total)
+     * @param (callable(string, string): void)|null $parseErrorCallback Optional callback for files that cannot be read or parsed: fn(string $file, string $error)
      *
      * @return list<ScanMatch> Array of scan matches
      */
@@ -126,21 +133,21 @@ class ExtensionScannerService
             // scan with an exception that names its path.
             ->ignoreUnreadableDirs();
 
-        $files = iterator_to_array($finder);
-        $fileCount = \count($files);
+        $files     = iterator_to_array($finder);
+        $fileCount = count($files);
 
         if ($fileCount === 0) {
             return $matches;
         }
 
         $matcherConfigurations = $this->getMatcherConfigurations();
-        $parser = $this->getParser();
+        $parser                = $this->getParser();
 
         $processedFiles = 0;
         /** @var SplFileInfo $file */
         foreach ($files as $file) {
             $fileMatches = $this->scanFile($file, $parser, $matcherConfigurations, $parseErrorCallback);
-            $matches = array_merge($matches, $fileMatches);
+            $matches     = array_merge($matches, $fileMatches);
 
             ++$processedFiles;
             if ($progressCallback !== null) {
@@ -157,7 +164,7 @@ class ExtensionScannerService
      * @param SplFileInfo                                                         $file                  The file to scan
      * @param Parser|null                                                         $parser                Optional parser instance (for performance when scanning multiple files)
      * @param array<class-string<AbstractCoreMatcher>, array<string, mixed>>|null $matcherConfigurations Optional matcher configs
-     * @param callable|null                                                       $parseErrorCallback    Optional callback for files that cannot be read or parsed
+     * @param (callable(string, string): void)|null                               $parseErrorCallback    Optional callback for files that cannot be read or parsed: fn(string $file, string $error)
      *
      * @return list<ScanMatch>
      */
@@ -212,7 +219,7 @@ class ExtensionScannerService
             $matchers = [];
             foreach ($matcherConfigurations as $matcherClass => $configuration) {
                 /** @var AbstractCoreMatcher $matcher */
-                $matcher = new $matcherClass($configuration);
+                $matcher                 = new $matcherClass($configuration);
                 $matchers[$matcherClass] = $matcher;
                 $matcherTraverser->addVisitor($matcher);
             }
@@ -238,7 +245,8 @@ class ExtensionScannerService
 
         // Collect matches from all matchers and convert to DTOs
         $relativeFile = $file->getRelativePathname();
-        $absolutePath = $file->getRealPath() ?: $relativeFile;
+        $realPath     = $file->getRealPath();
+        $absolutePath = $realPath !== false ? $realPath : $relativeFile;
 
         foreach ($matchers as $matcherClass => $matcher) {
             /** @var array<string, mixed> $rawMatch */
@@ -265,7 +273,7 @@ class ExtensionScannerService
     public function calculateStatistics(array $matches): array
     {
         $strong = 0;
-        $weak = 0;
+        $weak   = 0;
 
         foreach ($matches as $match) {
             if ($match->isStrong()) {
@@ -276,9 +284,9 @@ class ExtensionScannerService
         }
 
         return [
-            'total' => $strong + $weak,
+            'total'  => $strong + $weak,
             'strong' => $strong,
-            'weak' => $weak,
+            'weak'   => $weak,
         ];
     }
 
@@ -304,7 +312,7 @@ class ExtensionScannerService
         }
 
         $configurations = [];
-        $basePath = GeneralUtility::getFileAbsFileName(
+        $basePath       = GeneralUtility::getFileAbsFileName(
             'EXT:install/Configuration/ExtensionScanner/Php/',
         );
 
@@ -312,7 +320,7 @@ class ExtensionScannerService
             $configPath = $basePath . $configFile;
             if (file_exists($configPath)) {
                 /** @var array<string, mixed> $config */
-                $config = require $configPath;
+                $config                        = require $configPath;
                 $configurations[$matcherClass] = $config;
             }
         }

@@ -1,11 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * SPDX-License-Identifier: MIT
  * SPDX-FileCopyrightText: Netresearch DTT GmbH
  */
+
+declare(strict_types=1);
 
 namespace Netresearch\ExtensionScannerCli\Tests\Unit\Dto;
 
@@ -101,9 +101,9 @@ final class ScanMatchTest extends TestCase
     public function fromMatcherOutputCreatesValidInstance(): void
     {
         $rawMatch = [
-            'line' => 100,
+            'line'      => 100,
             'indicator' => 'weak',
-            'message' => 'Deprecated API',
+            'message'   => 'Deprecated API',
             'restFiles' => ['Breaking-67890.rst'],
         ];
 

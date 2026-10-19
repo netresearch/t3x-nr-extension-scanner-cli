@@ -1,11 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * SPDX-License-Identifier: MIT
  * SPDX-FileCopyrightText: Netresearch DTT GmbH
  */
+
+declare(strict_types=1);
 
 namespace Netresearch\ExtensionScannerCli\Tests\Unit\Service;
 
@@ -18,6 +18,11 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\SplFileInfo;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Install\ExtensionScanner\Php\Matcher\ClassConstantMatcher;
+
+use function dirname;
+use function function_exists;
+
+use const E_WARNING;
 
 #[CoversClass(ExtensionScannerService::class)]
 final class ExtensionScannerServiceTest extends TestCase
@@ -46,8 +51,8 @@ final class ExtensionScannerServiceTest extends TestCase
     public function scanFileParsesTheScannedCodeWithoutExecutingIt(): void
     {
         $directory = $this->createTemporaryDirectory();
-        $marker = $directory . '/executed.marker';
-        $file = $this->writeScannedFile(
+        $marker    = $directory . '/executed.marker';
+        $file      = $this->writeScannedFile(
             'SideEffect.php',
             '<?php' . "\n" . 'file_put_contents(' . var_export($marker, true) . ', "executed");' . "\n",
         );
@@ -62,7 +67,7 @@ final class ExtensionScannerServiceTest extends TestCase
     public function scanFileReportsAParseErrorAndReturnsNoMatches(): void
     {
         $this->createTemporaryDirectory();
-        $file = $this->writeScannedFile('Broken.php', '<?php function (' . "\n");
+        $file     = $this->writeScannedFile('Broken.php', '<?php function (' . "\n");
         $reported = [];
 
         $matches = $this->subject->scanFile(
@@ -83,7 +88,7 @@ final class ExtensionScannerServiceTest extends TestCase
     public function scanFileReportsANameResolutionErrorAndReturnsNoMatches(): void
     {
         $this->createTemporaryDirectory();
-        $file = $this->writeScannedFile('DuplicateAlias.php', "<?php\nuse A\\B as X;\nuse C\\D as X;\n");
+        $file     = $this->writeScannedFile('DuplicateAlias.php', "<?php\nuse A\\B as X;\nuse C\\D as X;\n");
         $reported = [];
 
         $matches = $this->subject->scanFile(
@@ -123,12 +128,12 @@ final class ExtensionScannerServiceTest extends TestCase
     public function scanFileReportsCodeTheCoreVisitorsCannotHandle(string $code, array $matcherConfigurations): void
     {
         $this->createTemporaryDirectory();
-        $file = $this->writeScannedFile('Valid.php', $code);
+        $file     = $this->writeScannedFile('Valid.php', $code);
         $reported = [];
 
         // GeneratorClassesResolver also raises a PHP warning for the empty
         // class name before it throws; keep it out of the test output.
-        set_error_handler(static fn (): bool => true, \E_WARNING);
+        set_error_handler(static fn (): bool => true, E_WARNING);
         try {
             $matches = $this->subject->scanFile(
                 $file,
@@ -150,7 +155,7 @@ final class ExtensionScannerServiceTest extends TestCase
     #[Test]
     public function scanPathSkipsADirectoryThatCannotBeRead(): void
     {
-        if (\function_exists('posix_geteuid') && posix_geteuid() === 0) {
+        if (function_exists('posix_geteuid') && posix_geteuid() === 0) {
             self::markTestSkipped('File permissions do not restrict root.');
         }
 
@@ -185,8 +190,8 @@ final class ExtensionScannerServiceTest extends TestCase
     public function scanFileReportsAFileThatCannotBeReadAndReturnsNoMatches(): void
     {
         $directory = $this->createTemporaryDirectory();
-        $file = new SplFileInfo($directory . '/Classes/Missing.php', 'Classes', 'Classes/Missing.php');
-        $reported = [];
+        $file      = new SplFileInfo($directory . '/Classes/Missing.php', 'Classes', 'Classes/Missing.php');
+        $reported  = [];
 
         $matches = $this->subject->scanFile(
             $file,
@@ -204,7 +209,7 @@ final class ExtensionScannerServiceTest extends TestCase
     #[Test]
     public function scanPathSkipsDependencyDirectoriesButNotFilesWhoseNameContainsTheirName(): void
     {
-        $directory = $this->createTemporaryDirectory();
+        $directory    = $this->createTemporaryDirectory();
         $scannedFiles = [
             'vendor/Package/Dependency.php',
             'Classes/node_modules/Module.php',
@@ -300,12 +305,12 @@ final class ExtensionScannerServiceTest extends TestCase
     {
         self::assertNotNull($this->temporaryDirectory);
         $path = $this->temporaryDirectory . '/' . $relativePathname;
-        if (!is_dir(\dirname($path))) {
-            mkdir(\dirname($path), 0o777, true);
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0o777, true);
         }
 
         file_put_contents($path, $content);
-        $relativePath = \dirname($relativePathname);
+        $relativePath = dirname($relativePathname);
 
         return new SplFileInfo($path, $relativePath === '.' ? '' : $relativePath, $relativePathname);
     }
