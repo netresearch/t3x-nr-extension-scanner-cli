@@ -18,6 +18,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\SplFileInfo;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Install\ExtensionScanner\Php\Matcher\ClassConstantMatcher;
+use TYPO3\CMS\Install\ExtensionScanner\Php\Matcher\MethodAnnotationMatcher;
 
 use function dirname;
 use function function_exists;
@@ -27,6 +28,10 @@ use const E_WARNING;
 #[CoversClass(ExtensionScannerService::class)]
 final class ExtensionScannerServiceTest extends TestCase
 {
+    private const CORE_VISITOR_NAMESPACE_SINCE_14_3_11 = 'TYPO3\\CMS\\Install\\ExtensionScanner\\Php\\Visitor\\';
+
+    private const DYNAMIC_CLASS_CONSTANT_FETCH = "<?php\nenum Suit: string { case Hearts = 'H'; }\n\$case = 'Hearts';\necho Suit::{\$case}->value;\n";
+
     private ExtensionScannerService $subject;
 
     private ?string $temporaryDirectory = null;
@@ -105,6 +110,54 @@ final class ExtensionScannerServiceTest extends TestCase
         self::assertStringContainsString('already in use', $reported['DuplicateAlias.php']);
     }
 
+    #[Test]
+    public function scanFileReportsAMatchOfTheConfiguredMatcher(): void
+    {
+        $this->createTemporaryDirectory();
+        $file     = $this->writeScannedFile('UsesConstant.php', "<?php\necho \\Foo\\Bar::BAZ;\n");
+        $reported = [];
+
+        $matches = $this->subject->scanFile(
+            $file,
+            null,
+            [ClassConstantMatcher::class => ['Foo\\Bar::BAZ' => ['restFiles' => ['Breaking-12345-Example.rst']]]],
+            static function (string $fileName, string $error) use (&$reported): void {
+                $reported[$fileName] = $error;
+            },
+        );
+
+        self::assertSame([], $reported);
+        self::assertCount(1, $matches);
+        self::assertSame(2, $matches[0]->line);
+        self::assertSame(['Breaking-12345-Example.rst'], $matches[0]->restFiles);
+    }
+
+    #[Test]
+    public function scanFileSkipsAFileMarkedWithExtensionScannerIgnoreFile(): void
+    {
+        // Before TYPO3 14.3.11, MethodAnnotationMatcher did not honour
+        // @extensionScannerIgnoreFile itself, so only the CodeStatistics check
+        // in the service keeps this file out of the result there.
+        $this->createTemporaryDirectory();
+        $file = $this->writeScannedFile(
+            'Ignored.php',
+            "<?php\n/**\n * @extensionScannerIgnoreFile\n */\nclass Ignored\n{\n    /**\n     * @cli\n     */\n    public function run(): void\n    {\n    }\n}\n",
+        );
+        $reported = [];
+
+        $matches = $this->subject->scanFile(
+            $file,
+            null,
+            [MethodAnnotationMatcher::class => ['@cli' => ['restFiles' => ['Breaking-12345-Example.rst']]]],
+            static function (string $fileName, string $error) use (&$reported): void {
+                $reported[$fileName] = $error;
+            },
+        );
+
+        self::assertSame([], $reported);
+        self::assertSame([], $matches);
+    }
+
     /**
      * @return iterable<string, array{string, array<class-string, array<string, mixed>>}>
      */
@@ -114,10 +167,38 @@ final class ExtensionScannerServiceTest extends TestCase
             "<?php\n\\" . GeneralUtility::class . "::makeInstance('');\n",
             [],
         ];
-        yield 'dynamic class constant fetch' => [
-            "<?php\nenum Suit: string { case Hearts = 'H'; }\n\$case = 'Hearts';\necho Suit::{\$case}->value;\n",
+        // TYPO3 14.3.11 (core commit fc57143f5a) ignores this fetch in
+        // ClassConstantMatcher, see the test after this one.
+        if (!class_exists(self::CORE_VISITOR_NAMESPACE_SINCE_14_3_11 . 'CodeStatistics')) {
+            yield 'dynamic class constant fetch' => [
+                self::DYNAMIC_CLASS_CONSTANT_FETCH,
+                [ClassConstantMatcher::class => ['Foo\\Bar::BAZ' => ['restFiles' => ['Breaking-12345-Example.rst']]]],
+            ];
+        }
+    }
+
+    #[Test]
+    public function scanFileScansADynamicClassConstantFetchOnACoreThatIgnoresIt(): void
+    {
+        if (!class_exists(self::CORE_VISITOR_NAMESPACE_SINCE_14_3_11 . 'CodeStatistics')) {
+            self::markTestSkipped('ClassConstantMatcher throws on this fetch before TYPO3 14.3.11.');
+        }
+
+        $this->createTemporaryDirectory();
+        $file     = $this->writeScannedFile('Valid.php', self::DYNAMIC_CLASS_CONSTANT_FETCH);
+        $reported = [];
+
+        $matches = $this->subject->scanFile(
+            $file,
+            null,
             [ClassConstantMatcher::class => ['Foo\\Bar::BAZ' => ['restFiles' => ['Breaking-12345-Example.rst']]]],
-        ];
+            static function (string $fileName, string $error) use (&$reported): void {
+                $reported[$fileName] = $error;
+            },
+        );
+
+        self::assertSame([], $reported);
+        self::assertSame([], $matches);
     }
 
     /**

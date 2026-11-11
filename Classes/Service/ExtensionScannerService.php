@@ -24,6 +24,7 @@ namespace Netresearch\ExtensionScannerCli\Service;
 use Netresearch\ExtensionScannerCli\Dto\ScanMatch;
 use PhpParser\Error;
 use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser;
 use PhpParser\ParserFactory;
@@ -32,8 +33,6 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Throwable;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Install\ExtensionScanner\Php\CodeStatistics;
-use TYPO3\CMS\Install\ExtensionScanner\Php\GeneratorClassesResolver;
 use TYPO3\CMS\Install\ExtensionScanner\Php\Matcher\AbstractCoreMatcher;
 use TYPO3\CMS\Install\ExtensionScanner\Php\Matcher\ArrayDimensionMatcher;
 use TYPO3\CMS\Install\ExtensionScanner\Php\Matcher\ArrayGlobalMatcher;
@@ -97,6 +96,18 @@ class ExtensionScannerService
         PropertyExistsStaticMatcher::class         => 'PropertyExistsStaticMatcher.php',
         PropertyProtectedMatcher::class            => 'PropertyProtectedMatcher.php',
         PropertyPublicMatcher::class               => 'PropertyPublicMatcher.php',
+    ];
+
+    /**
+     * Namespaces of the TYPO3 core node visitors CodeStatistics and
+     * GeneratorClassesResolver, newest first. TYPO3 14.3.11 moved them from
+     * ExtensionScanner\Php to ExtensionScanner\Php\Visitor (core commit
+     * fc57143f5a, #111251) without a class alias, so the names are strings:
+     * only one of the two classes exists in an installation.
+     */
+    private const CORE_VISITOR_NAMESPACES = [
+        'TYPO3\\CMS\\Install\\ExtensionScanner\\Php\\Visitor\\',
+        'TYPO3\\CMS\\Install\\ExtensionScanner\\Php\\',
     ];
 
     /**
@@ -202,14 +213,14 @@ class ExtensionScannerService
             // such as two use statements with the same alias.
             $traverser = new NodeTraverser();
             $traverser->addVisitor(new NameResolver());
-            $traverser->addVisitor(new GeneratorClassesResolver());
+            $traverser->addVisitor($this->createCoreVisitor('GeneratorClassesResolver'));
 
-            $codeStatistics = new CodeStatistics();
+            $codeStatistics = $this->createCoreVisitor('CodeStatistics');
             $traverser->addVisitor($codeStatistics);
 
             $statements = $traverser->traverse($statements);
 
-            if ($codeStatistics->isFileIgnored()) {
+            if (method_exists($codeStatistics, 'isFileIgnored') && $codeStatistics->isFileIgnored() === true) {
                 return $matches;
             }
 
@@ -233,8 +244,8 @@ class ExtensionScannerService
             return $matches;
         } catch (Throwable $e) {
             // The TYPO3 core visitors throw on some valid code, for example
-            // GeneratorClassesResolver on makeInstance('') and
-            // ClassConstantMatcher on Suit::{$name}. One file must not end
+            // GeneratorClassesResolver on makeInstance('') and, before TYPO3
+            // 14.3.11, ClassConstantMatcher on Suit::{$name}. One file must not end
             // the scan of the others.
             if ($parseErrorCallback !== null) {
                 $parseErrorCallback($file->getRelativePathname(), 'The scanner failed on this file: ' . $e->getMessage());
@@ -341,5 +352,26 @@ class ExtensionScannerService
         }
 
         return $this->parser;
+    }
+
+    /**
+     * Create a TYPO3 core node visitor from whichever namespace the installed
+     * core provides it in, see CORE_VISITOR_NAMESPACES.
+     */
+    private function createCoreVisitor(string $shortName): NodeVisitor
+    {
+        foreach (self::CORE_VISITOR_NAMESPACES as $namespace) {
+            $className = $namespace . $shortName;
+            if (!class_exists($className)) {
+                continue;
+            }
+
+            $visitor = new $className();
+            if ($visitor instanceof NodeVisitor) {
+                return $visitor;
+            }
+        }
+
+        throw new RuntimeException('The TYPO3 core class ' . $shortName . ' was not found in EXT:install.');
     }
 }
