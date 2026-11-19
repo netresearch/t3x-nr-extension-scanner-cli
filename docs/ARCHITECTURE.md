@@ -31,6 +31,6 @@ Agent-facing component map. For coding conventions see [`../Classes/AGENTS.md`](
 
 - **Deliberate use of `@internal` TYPO3 API:** the core Extension Scanner matcher classes are `@internal`. This is accepted for a dev tool and the PHPStan ignores documenting it live in `Build/phpstan/phpstan.neon`.
 - **Strategy pattern for output:** new formats are added by implementing `OutputFormatterInterface`; see `Classes/AGENTS.md` for the pattern.
-- **CI matrix:** PHP 8.2–8.5 × TYPO3 `^12.4`/`^13.4`/`^14.3` via the shared reusable `netresearch/typo3-ci-workflows` (`.github/workflows/ci.yml`).
+- **CI matrix:** PHP 8.2–8.6 × TYPO3 `^12.4`/`^13.4`/`^14.3` via the shared reusable `netresearch/typo3-ci-workflows` (`.github/workflows/ci.yml`).
 
 There is no ADR directory; decisions are recorded here and in the config files referenced above.
