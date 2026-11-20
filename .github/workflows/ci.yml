@@ -30,7 +30,7 @@ jobs:
     permissions:
       contents: read
     with:
-      php-versions: '["8.2","8.3","8.4","8.5"]'
+      php-versions: '["8.2","8.3","8.4","8.5","8.6"]'
       typo3-versions: '["^12.4","^13.4","^14.3"]'
       # netresearch/typo3-ci-workflows is unresolvable under typo3/cms-core ^12.4
       # (saschaegerer/phpstan-typo3 ^2||^3 requires cms-core >= 13.4).
